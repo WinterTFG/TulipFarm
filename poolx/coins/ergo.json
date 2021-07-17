@@ -1,0 +1,7 @@
+{
+    "name": "Ergo",
+    "symbol": "ERG",
+    "algorithm": "blake",
+    "peerMagic": "fbc0b6db",
+    "reward": "POW"
+}
