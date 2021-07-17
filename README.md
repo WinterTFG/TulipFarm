@@ -8,4 +8,4 @@
 
 ## TODO
 > - heartbeat for server and proxy to connect more elegantly
-> - UI
+
