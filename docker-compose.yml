@@ -1,0 +1,39 @@
+
+version: "3.3"
+
+services:
+  ergonode:
+    build: 
+      context: .
+      dockerfile: Dockerfile.node.dev
+    container_name: ergonode
+    # volumes: ['/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo']
+    volumes: ['/var/ergo/mainnet.primary/.ergo:/var/ergo/.ergo']
+    ports:
+      - "9053:9053"
+  #  deploy:
+  #    restart_policy:
+  #      condition: always
+    depends_on:
+      - ergoredis
+
+  ergopool:
+    build: 
+      context: .
+      dockerfile: Dockerfile.pool.dev
+    container_name: ergopool
+    ports: 
+      - "3032:3032" # 
+      - "8008:8008" # stratum
+      - "2127:2127" # website
+  #  deploy:
+  #    restart_policy:
+  #      condition: always
+    depends_on:
+      - ergonode
+            
+  ergoredis:
+    image: redis
+    container_name: ergoredis
+    ports:
+      - "6379:6379"
