@@ -1,7 +1,67 @@
-## This repo is looking for maintainers! Please reach out if interested.
+# TULIPFARM ERGO POOL
+## Getting Started
+- Make a local /var/ergo folder to hold the .ergo directory.  Create mainnet.primary and testnet.primary folders underneath
+or update the docker-compose.yml volume mount so these doing get built within the docker.  You can have these built inside docker, 
+however it would be recreated every time an instance/container was started.
+- Using /var/git:<br>
+> `git clone https://github.com/WinterTFG/ergowinter.git`<br>
+> `docker-compose up`<br>
 
---------
+This will start the node (you may need to setup a ergo.config in ./node and reload or wait for sync)
 
+### To DEV:
+This will mount the local files in the docker so they can be edited directly.  Nodemon is used to look for updates (see
+docker-compose.dev.ymp entrypoint override).  So, changes will restart the pool.<br>
+>`docker-compose -f docker-compose.dev.yml up`
+
+### NOMP Features
+
+* For the pool server it uses the highly efficient [node-stratum-pool](//github.com/zone117x/node-stratum-pool) module which
+supports vardiff, POW & POS, transaction messages, anti-DDoS, IP banning, [several hashing algorithms](//github.com/zone117x/node-stratum-pool#hashing-algorithms-supported).
+
+* The portal has an [MPOS](//github.com/MPOS/php-mpos) compatibility mode so that the it can
+function as a drop-in-replacement for [python-stratum-mining](//github.com/Crypto-Expert/stratum-mining). This
+mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
+For a direct tutorial see the wiki page [Setting up NOMP for MPOS usage](//github.com/zone117x/node-open-mining-portal/wiki/Setting-up-NOMP-for-MPOS-usage).
+
+* Multi-pool ability - this software was built from the ground up to run with multiple coins simultaneously (which can
+have different properties and hashing algorithms). It can be used to create a pool for a single coin or for multiple
+coins at once. The pools use clustering to load balance across multiple CPU cores.
+
+* For reward/payment processing, shares are inserted into Redis (a fast NoSQL key/value store). The PROP (proportional)
+reward system is used with [Redis Transactions](http://redis.io/topics/transactions) for secure and super speedy payouts.
+There is zero risk to the pool operator. Shares from rounds resulting in orphaned blocks will be merged into share in the
+current round so that each and every share will be rewarded
+
+* This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
+authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
+pool such as connected miners, network/pool difficulty/hash rate, etc.
+
+* Coin-switching ports using coin-networks and crypto-exchange APIs to detect profitability. Miner's connect to these ports
+with their public key which NOMP uses to derive an address for any coin needed to be paid out.
+
+
+#### Attack Mitigation
+* Detects and thwarts socket flooding (garbage data sent over socket in order to consume system resources).
+* Detects and thwarts zombie miners (botnet infected computers connecting to your server to use up sockets but not sending any shares).
+* Detects and thwarts invalid share attacks:
+   * NOMP is not vulnerable to the low difficulty share exploits happening to other pool servers. Other pool server
+   software has hardcoded guesstimated max difficulties for new hashing algorithms while NOMP dynamically generates the
+   max difficulty for each algorithm based on values founds in coin source code.
+   * IP banning feature which on a configurable threshold will ban an IP for a configurable amount of time if the miner
+   submits over a configurable threshold of invalid shares.
+* NOMP is written in Node.js which uses a single thread (async) to handle connections rather than the overhead of one
+thread per connection, and clustering is also implemented so all CPU cores are taken advantage of.
+
+
+#### Security
+NOMP has some implicit security advantages for pool operators and miners:
+* Without a registration/login system, non-security-oriented miners reusing passwords across pools is no longer a concern.
+* Automated payouts by default and pool profits are sent to another address so pool wallets aren't plump with coins -
+giving hackers little reward and keeping your pool from being a target.
+* Miners can notice lack of automated payments as a possible early warning sign that an operator is about to run off with their coins.
+
+This project based off NOMP and the ERGO modifications:
 
 # NOMP ![NOMP Logo](http://zone117x.github.io/node-open-mining-portal/logo.svg "NOMP Logo")
 #### Node Open Mining Portal
