@@ -7,7 +7,9 @@ services:
       context: .
       dockerfile: Dockerfile.node.dev
     container_name: ergonode
-    # volumes: ['/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo']
+  #  environment:
+  #    - DEBUG=1
+    #volumes: ['/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo']
     volumes: ['/var/ergo/mainnet.primary/.ergo:/var/ergo/.ergo']
     ports:
       - "9053:9053"
