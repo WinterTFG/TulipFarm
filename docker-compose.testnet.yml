@@ -8,7 +8,8 @@ services:
     container_name: ergonode
   #  environment:
   #    - DEBUG=1
-    volumes: ['/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo']
+    volumes: 
+      - '/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo'
     ports:
       - "9053:9052" # rempap for config files
     depends_on:
@@ -19,7 +20,8 @@ services:
       context: .
       dockerfile: Dockerfile.pool.dev
     container_name: ergopool
-    volumes: ['/var/git/TulipFarm/pool:/var/ergo']
+    volumes: 
+      - '/var/git/TulipFarm/pool:/var/ergo'
     ports: 
       - "3032:3032" # 
       - "8008:8008" # stratum
@@ -33,3 +35,8 @@ services:
     container_name: ergoredis
     ports:
       - "6379:6379"
+    # redis persistence
+    volumes:
+      - /var/redis/testnet:/data
+    entrypoint: redis-server --appendonly yes
+

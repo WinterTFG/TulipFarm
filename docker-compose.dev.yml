@@ -39,3 +39,8 @@ services:
     container_name: ergoredis
     ports:
       - "6379:6379"
+    # redis persistence
+    volumes:
+      - /var/redis/dev:/data
+    entrypoint: redis-server --appendonly yes
+
