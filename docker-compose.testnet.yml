@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile.pool.dev
     container_name: ergopool
-    volumes: ['/var/git/ergowinter/pool:/var/ergo']
+    volumes: ['/var/git/TulipFarm/pool:/var/ergo']
     ports: 
       - "3032:3032" # 
       - "8008:8008" # stratum
