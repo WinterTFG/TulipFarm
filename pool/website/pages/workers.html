@@ -1,66 +1,296 @@
-<style>
-
-    #topCharts {
-        padding: 18px;
-    }
-
-    #topCharts > div > div > svg {
-        display: block;
-        height: 280px;
-    }
-
-    .chartWrapper {
-        border: solid 1px #c7c7c7;
-        border-radius: 5px;
-        padding: 5px;
-        margin-bottom: 18px;
-    }
-
-    .chartLabel {
-        font-size: 1.2em;
-        text-align: center;
-        padding: 4px;
-    }
-
-    .chartHolder {
-
-    }
-
-    table {
-        width: 100%;
-    }
-
-</style>
+ <section class="no-padding-top no-padding-bottom">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="block margin-bottom-sm">
 
 
-<div id="topCharts">
+                    <div class="title"><strong>Worker Info</strong></div>
 
-{{ for(var pool in it.stats.pools) { }}
 
-    <div class="chartWrapper">
-        <div class="chartLabel">{{=it.stats.pools[pool].name}}</div>
-        <div class="chartHolder">
-            <table class="pure-table">
-                <thead>
-                <tr>
-                    <th>Address</th>
-                    <th>Shares</th>
-                    <th>Invalid shares</th>
-                    <th>Efficiency</th>
-                    <th>Hashrate</th>
-                </tr>
-                </thead>
-                {{ for(var worker in it.stats.pools[pool].workers) { }}
-                   {{var workerstat = it.stats.pools[pool].workers[worker];}}
-                    <tr class="pure-table-odd">
-                        <td>{{=worker}}</td>
-                        <td>{{=Math.floor(workerstat.shares)}}</td>
-                        <td>{{=Math.floor(workerstat.invalidshares)}}</td>
-                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
-                        <td>{{=workerstat.hashrateString}}</td>
-                    </tr>
-                {{ } }}
-            </table>
+                    <div class="table-responsive"> 
+                        <table class="table">
+                          <!--<thead>
+                            <tr>
+                              <th>#</th>
+                              <th>First Name</th>
+                              <th>Last Name</th>
+                              <th>Username</th>
+                            </tr>
+                          </thead>-->
+                          <tbody>
+
+                            <tr>
+                                <td>Hashrate: </td>
+                                <td id="workerHash"></td>
+                            </tr>
+                            <tr>
+                                <td>Effort: </td>
+                                <td>worker API</td>
+                            </tr>
+                            <tr>
+                                <td>Participation</td>
+                                <td>worker API</td>
+                              </tr>
+
+                          </tbody>
+                        </table>
+                      </div>
+
+
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="block margin-bottom-sm">
+                    
+                    
+                    <div class="title"><strong>Payout</strong></div>
+
+
+                    <div class="table-responsive"> 
+                        <table class="table">
+                          <!--<thead>
+                            <tr>
+                              <th>#</th>
+                              <th>First Name</th>
+                              <th>Last Name</th>
+                              <th>Username</th>
+                            </tr>
+                          </thead>-->
+                          <tbody>
+                            
+                            <tr>
+                                <td>Balance: </td>
+                                <td>worker API</td>
+                            </tr>
+                            <tr>
+                                <td>Unverified: </td>
+                                <td>worker API</td>
+                            </tr>
+                            <tr>
+                                <td>Coin Price: </td>
+                                <td id="ergoPrice">Loading...</td>
+                              </tr>
+                              
+                          </tbody>
+                        </table>
+                      </div>
+
+
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="block margin-bottom-sm">
+                    
+                    
+                    <div class="title"><strong>User dashboard</strong></div>
+
+                    
+                    <div class="table-responsive"> 
+                        <table class="table">
+                          <!--<thead>
+                            <tr>
+                              <th>#</th>
+                              <th>First Name</th>
+                              <th>Last Name</th>
+                              <th>Username</th>
+                            </tr>
+                          </thead>-->
+                          <tbody>
+
+                            <tr>
+                                <td><a href="#">Change min payout</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#">Pause payouts</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#">Support dev</a></td>
+                              </tr>
+
+                          </tbody>
+                        </table>
+                      </div>
+
+
+                </div>
+            </div>
+
+            
+            
+        
+
+                        <!-- <style>
+                            .chartDiv {
+                            height: 400px;
+                            }
+                        </style> -->
+
+                    
+                        <div class="col-lg-4 col-md-6">
+                            <div class="block chart margin-bottom-sm">
+                                <div class="title"><strong>History</strong></div>
+
+                    
+                                <div class="table-responsive"> 
+                                    <table class="table">
+                                      <!--<thead>
+                                        <tr>
+                                          <th>#</th>
+                                          <th>First Name</th>
+                                          <th>Last Name</th>
+                                          <th>Username</th>
+                                        </tr>
+                                      </thead>-->
+                                      <tbody>
+            
+                                        <tr>
+                                            <td>60 min: </td>
+                                            <td>worker API</td>
+                                        </tr>
+                                        <tr>
+                                            <td>24 hr: </td>
+                                            <td>worker API</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Month: </td>
+                                            <td>worker API</td>
+                                          </tr>
+            
+                                      </tbody>
+                                    </table>
+                                  </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8 col-md-12">
+                            <div class="block chart margin-bottom-sm">
+                                <div class="title"><strong>Worker hashrate</strong></div>
+                                <div class="chart">
+                                    <div class="chartDiv"><svg id="poolHashrate"></svg></div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="col-lg-12 col-md-12">
+                            <div class="block chart margin-bottom-sm">
+                                <div class="title"><strong>Worker data</strong></div>
+                                <div class="table-responsive">
+                                    {{ for(var pool in it.stats.pools) { }}
+                                            <table class="table">
+                                                <thead>
+                                                <tr>
+                                                    <th>Address</th>
+                                                    <th>Efficiency</th>
+                                                    <th>Hashrate</th>
+                                                </tr>
+                                                </thead>
+                                                {{ for(var worker in it.stats.pools[pool].workers) { }}
+                                                {{var workerstat = it.stats.pools[pool].workers[worker];}}
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{=worker}}</td>
+                                                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
+                                                        <td>{{=workerstat.hashrateString}}</td>
+                                                    </tr>
+                                                </tbody>
+                                                {{ } }}
+                                            </table>
+                                    {{ } }}
+                                </div>
+                            </div>
+                        </div>
         </div>
     </div>
-{{ } }}
+
+</section>
+
+<script>
+    $(function() {
+        statsSource.addEventListener('message', function (e) {
+            var stats = JSON.parse(e.data);
+            for (algo in stats.algos) {
+                $('#statsMiners' + algo).text(stats.algos[algo].workers);
+                $('#statsHashrate' + algo).text(stats.algos[algo].hashrateString);
+            }
+            for (var pool in stats.pools) {
+                $('#statsMiners' + pool).text(stats.pools[pool].workerCount);
+                $('#statsHashrate' + pool).text(stats.pools[pool].hashrateString);
+            }
+        });
+    });
+    document.querySelector('main').appendChild(document.createElement('script')).src = '/static/stats.js';
+
+
+
+
+
+
+    // this function expects worker in form: address.rig (i.e. 1234567abcd890.rigname)
+    async function getWorker(rig) {
+        const res = await fetch('/api/stats');
+        const jsn = await res.json();
+
+        for (j in jsn.pools.ergo.workers) {
+
+            console.log("j = " + j)
+            console.log("rig = " + rig)
+
+            // only display values if search params match a worker
+            if (rig != j.split('.')[0]) { continue; }
+
+            let shr = jsn.pools.ergo.workers[j].shares
+            // console.log(shr);
+            let inv = jsn.pools.ergo.workers[j].invalidshares
+
+            /*
+            html += '\
+                <tr class="pure-table-odd">\
+                    <td>'+(j.split('.')[0])+'</td>\
+                    <td>'+shr+'</td>\
+                    <td>'+inv+'</td>\
+                    <td>'+(shr > 0 ? Math.floor(10000 * shr / (shr + inv)) / 100 : 0)+'%</td>\
+                    <td>'+(jsn.pools.ergo.workers[j].hashrateString)+'</td>\
+                    <td>'+(j.split('.')[1] == undefined ? '' : j.split('.')[1])+'</td>\
+                </tr>';
+                */
+            var workerHashrate = jsn.pools.ergo.workers[j].hashrateString;
+
+        }
+
+        return workerHashrate;
+    }
+    
+    var pathNameString = window.location.pathname;
+    console.log('pathNameString = ' + pathNameString)
+    var workerId = pathNameString.substr(9, pathNameString.length);
+    console.log('workerId = ' + workerId)
+
+
+    
+    // get worker info; requires async call since this is an API, so slow call may look blank
+    getWorker(workerId)
+        .then(workerHashrate => document.getElementById('workerHash').innerHTML = workerHashrate);
+
+
+
+    async function getErgOracleData() {
+        // coingecko free API allows 50 calls per minute
+        // if that becomes too limited, use erg-oracle and uncomment the json.parse line
+
+        // let response = await fetch('https://erg-oracle-ergusd.spirepools.com/frontendData');
+        let response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=ergo');
+        let ergOracleData = await response.json();
+        // let jsonOracleData = JSON.parse(ergOracleData);
+        let price = ergOracleData[0].current_price;
+        return price;
+        }
+
+    getErgOracleData()
+        .then((price) => {
+            document.getElementById('ergoPrice').innerHTML = '$' + price;
+        });
+
+
+</script>

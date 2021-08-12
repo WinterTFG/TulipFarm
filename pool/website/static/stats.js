@@ -21,6 +21,7 @@ function buildChartData(){
         }
     }
 
+    console.log(statData);
 
     for (var i = 0; i < statData.length; i++){
 
@@ -59,13 +60,16 @@ function buildChartData(){
         });
         poolHashrateData.push({
             key: pool,
-            values: pools[pool].hashrate
+            values: pools[pool].hashrate,
+            color: 'rgba(134, 77, 217, 0.88)'
         });
         poolBlockData.push({
             key: pool,
-            values: pools[pool].blocks
-        })
+            values: pools[pool].blocks,
+            color: "#a372ec"
+        });
     }
+
 }
 
 function getReadableHashRateString(hashrate){
@@ -106,7 +110,7 @@ function displayCharts(){
 
     nv.addGraph(function() {
         poolHashrateChart = nv.models.lineChart()
-            .margin({left: 60, right: 40})
+            .margin({left: 40, right: 60})
             .x(function(d){ return d[0] })
             .y(function(d){ return d[1] })
             .useInteractiveGuideline(true);
@@ -117,7 +121,10 @@ function displayCharts(){
             return getReadableHashRateString(d);
         });
 
-        d3.select('#poolHashrate').datum(poolHashrateData).call(poolHashrateChart);
+        d3.select('#poolHashrate')
+            .datum(poolHashrateData)
+            .call(poolHashrateChart)
+            .transition().duration(500);
 
         return poolHashrateChart;
     });
@@ -139,7 +146,7 @@ function displayCharts(){
 }
 
 function TriggerChartUpdates(){
-    poolWorkerChart.update();
+    //poolWorkerChart.update();
     poolHashrateChart.update();
     poolBlockChart.update();
 }
@@ -155,7 +162,6 @@ $.getJSON('/api/pool_stats', function(data){
 statsSource.addEventListener('message', function(e){
     var stats = JSON.parse(e.data);
     statData.push(stats);
-
 
     var newPoolAdded = (function(){
         for (var p in stats.pools){
@@ -197,6 +203,5 @@ statsSource.addEventListener('message', function(e){
         }
         TriggerChartUpdates();
     }
-
 
 });

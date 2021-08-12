@@ -185,14 +185,15 @@ module.exports = function(logger){
                 logger.debug(logSystem, logComponent, logSubCat, 'We thought a block was found but it was rejected by the daemon, share data: ' + shareData);
 
             else if (isValidBlock)
-                logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.blockHash + ' by ' + data.worker);
+                logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.msg + ' by ' + data.worker);
 
+            // {"job":"2","ip":"::ffff:172.30.0.1","port":8008,"worker":"3WvsUJxRgFeDmiFVhmkA6ysqfmRYQwsrWK57Y7BnYEsGnvRTNRbY.leif","height":48369,"msg":"b5afb05673c81d4720a85ebf84d05dcd88aab239c74bd0079995df7a1802cd9a","difficulty":3210000000,"shareDiff":1,"blockDiff":false,"blockDiffActual":14.828982098,"blockHash":{"type":"Buffer","data":[11,137,32,11,137,229,31,168,119,180,197,177,19,131,50,200,214,56,116,56,208,234,54,198,136,141,29,12,119,245,14,175]},"blockHashInvalid":false,"txHash":"txhash"}/
             if (isValidShare) {
                 if(data.shareDiff > 1000000000)
                     logger.debug(logSystem, logComponent, logSubCat, 'Share was found with diff higher than 1.000.000.000!');
                 else if(data.shareDiff > 1000000)
                     logger.debug(logSystem, logComponent, logSubCat, 'Share was found with diff higher than 1.000.000!');
-                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + '/' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']' );
+                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + '/' + data.blockDiffActual + ' by ' + data.worker + ' [' + data.ip + ']' );
 
             } else if (!isValidShare)
                 logger.debug(logSystem, logComponent, logSubCat, 'Share rejected: ' + shareData);

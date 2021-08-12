@@ -27,4 +27,11 @@ $(function(){
 
     window.statsSource = new EventSource("/api/live_stats");
 
+    const queryString = new URLSearchParams(window.location.search);
+
+        if (queryString.has("search")) {
+            var newSearch = "workers/" + queryString.get("search");
+            history.pushState(null, null, '/' + newSearch);
+        }
+
 });

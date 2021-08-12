@@ -8,14 +8,12 @@ var redis = require('redis');
 
 var dot = require('dot');
 var express = require('express');
-var bodyParser = require('body-parser');
 var compress = require('compression');
 
 var Stratum = require('stratum-pool');
 var util = require('stratum-pool/lib/util.js');
 
 var api = require('./api.js');
-
 
 module.exports = function(logger){
 
@@ -39,9 +37,11 @@ module.exports = function(logger){
         'stats.html': 'stats',
         'tbs.html': 'tbs',
         'workers.html': 'workers',
+        'worker.html': 'worker',
         'api.html': 'api',
         'admin.html': 'admin',
-        'mining_key.html': 'mining_key'
+        'mining_key.html': 'mining_key',
+        'howto.html' : 'howto'
     };
 
     var pageTemplates = {};
@@ -227,12 +227,36 @@ module.exports = function(logger){
 
     };
 
-
+////////////////////////////////////////
+//               INIT                 //
+////////////////////////////////////////
 
     var app = express();
 
+    // app.use(bodyParser.json());   // DEPRECATED
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-    app.use(bodyParser.json());
+    // handle request for worker info
+    app.get('/workers/:id', function (req, res, next){
+
+        res.header('Content-Type', 'text/html');
+
+        let id = req.params.id;
+        if (req.params.id) {
+            // getWorker(req.params.id);
+            res.end(indexesProcessed['workers']);
+            return;
+        }
+        else {
+            // probably should error or default somewhere here; debugging to show what was returned
+            res.end('worker name incorrect length: '+JSON.stringify(id))
+            // this seems to use /static/stats.js, but relative path from /worker/., rather than / 
+            // res.end(indexesProcessed['stats']);
+        }
+        next();
+    }); 
+
 
     app.get('/get_page', function(req, res, next){
         var requestedPage = getPage(req.query.id);
@@ -286,6 +310,5 @@ module.exports = function(logger){
         logger.error(logSystem, 'Server', 'Could not start website on ' + portalConfig.website.host + ':' + portalConfig.website.port
             +  ' - its either in use or you do not have permission');
     }
-
 
 };
