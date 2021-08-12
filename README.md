@@ -3,13 +3,14 @@
 ## Quick start
 
 > `> git clone https://github.com/WinterTFG/TulipFarm.git`<br>
-> `> docker-compose -f docker-compose.dev.yml up`
+> `> docker-compose up`
 
-## Steps
-1. git clone node, stratum and proxy into folders as is (or just download jar for node, perhaps?)
-1. Update ergo.conf with proper hash api (or use existing)
-1. docker compose up in main folder
-1. wait til node is up and server is connected and then docker restart ergoproxy
+Start on TESTNET
+> `> docker-compose -f docker-compose.testnet.yml up`
+
+## Notes
+1. The DEV and TESTNET compose scripts map the local volumes and change entrypoint to use nodemon for quicker development.  Be sure to npm INSIDE the docker if you are in dev since the Dockerfile node_modules will be hidden.
+1. ergoredis, ergonode, and ergopool are all valid names ONLY WITHIN thier containers when they are started from the docker compose.
 
 ## TODO
 > - heartbeat for server and proxy to connect more elegantly
