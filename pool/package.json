@@ -1,26 +1,26 @@
 {
-    "name": "node-open-mining-portal",
+    "name": "ergo-nomp",
     "version": "0.0.4",
-    "description": "An extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool",
+    "description": "Tulip Farm Pool",
     "keywords": [
         "stratum",
         "mining",
         "pool",
         "server",
         "poolserver",
-        "bitcoin",
-        "litecoin",
-        "scrypt"
+        "defi",
+        "ergo"
     ],
-    "homepage": "https://github.com/zone117x/node-open-mining-portal",
+    "homepage": "https://github.com/WinterTFG/stratum-pool",
     "bugs": {
-        "url": "https://github.com/zone117x/node-open-mining-portal/issues"
+        "url": "https://github.com/WinterTFG/stratum-pool/issues"
     },
     "license": "GPL-2.0",
     "author": "Matthew Little",
     "contributors": [
         "vekexasia",
-        "TheSeven"
+        "TheSeven",
+        "WinterTFG"
     ],
     "main": "init.js",
     "bin": {
@@ -28,7 +28,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/zone117x/node-open-mining-portal.git"
+        "url": "https://github.com/WinterTFG/stratum-pool.git"
     },
     "dependencies": {
         "async": "1.5.2",
