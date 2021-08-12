@@ -207,7 +207,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     }
                 });
 
-                var shareMultiplier = Math.pow(2, 32) / algos[coinStats.algorithm].multiplier;
+                var shareMultiplier = Math.pow(2, 8) / algos[coinStats.algorithm].multiplier;
                 coinStats.hashrate = shareMultiplier * coinStats.shares / portalConfig.website.stats.hashrateWindow;
 
                 coinStats.workerCount = Object.keys(coinStats.workers).length;

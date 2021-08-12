@@ -9,7 +9,7 @@ var extend = require('extend');
 var PoolLogger = require('./libs/logUtil.js');
 var CliListener = require('./libs/cliListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
-var PaymentProcessor = require('./libs/paymentProcessor.js');
+// var PaymentProcessor = require('./libs/paymentProcessor.js');
 var Website = require('./libs/website.js');
 var ProfitSwitch = require('./libs/profitSwitch.js');
 
@@ -24,21 +24,18 @@ if (!fs.existsSync('config.json')){
 
 var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
 var poolConfigs;
-
-
 var logger = new PoolLogger({
     logLevel: portalConfig.logLevel,
     logColors: portalConfig.logColors
 });
 
 
-
-
 try {
     require('newrelic');
     if (cluster.isMaster)
         logger.debug('NewRelic', 'Monitor', 'New Relic initiated');
-} catch(e) {}
+} 
+catch(e) { ; }
 
 
 //Try to give process ability to handle 100k concurrent connections
@@ -73,9 +70,9 @@ if (cluster.isWorker){
         case 'pool':
             new PoolWorker(logger);
             break;
-        case 'paymentProcessor':
-            new PaymentProcessor(logger);
-            break;
+        // case 'paymentProcessor':
+        //     new PaymentProcessor(logger);
+        //     break;
         case 'website':
             new Website(logger);
             break;
@@ -178,7 +175,6 @@ var buildPoolConfigs = function(){
     });
     return configs;
 };
-
 
 
 var spawnPoolWorkers = function(){
@@ -357,7 +353,6 @@ var processCoinSwitchCommand = function(params, options, reply){
 };
 
 
-
 var startPaymentProcessor = function(){
 
     var enabledForAny = false;
@@ -373,10 +368,12 @@ var startPaymentProcessor = function(){
     if (!enabledForAny)
         return;
 
+    // console.log('PAYPROC::'+JSON.stringify(poolConfigs))
     var worker = cluster.fork({
         workerType: 'paymentProcessor',
         pools: JSON.stringify(poolConfigs)
     });
+
     worker.on('exit', function(code, signal){
         logger.error('Master', 'Payment Processor', 'Payment processor died, spawning replacement...');
         setTimeout(function(){
@@ -425,19 +422,14 @@ var startProfitSwitch = function(){
 };
 
 
-
+/// MAIN
 (function init(){
 
     poolConfigs = buildPoolConfigs();
-
     spawnPoolWorkers();
-
-    startPaymentProcessor();
-
+    // startPaymentProcessor(); // removed leif 20210809 - moved to extermal process
     startWebsite();
-
-    startProfitSwitch();
-
+    // startProfitSwitch(); // removed leif 20210809 - not using profit switching
     startCliListener();
 
 })();

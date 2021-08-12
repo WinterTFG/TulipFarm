@@ -1,0 +1,110 @@
+<style>
+    #topCharts {
+        padding: 18px;
+    }
+
+    #topCharts > div > div > svg {
+        display: block;
+        height: 280px;
+    }
+
+    .chartWrapper {
+        border: solid 1px #c7c7c7;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 18px;
+    }
+
+    .chartLabel {
+        font-size: 1.2em;
+        text-align: center;
+        padding: 4px;
+    }
+
+    .chartHolder {
+
+    }
+
+    table {
+        width: 100%;
+    }
+
+</style>
+<div id="topCharts">
+
+{{ for(var pool in it.stats.pools) { }}
+    <div class="chartWrapper">
+        <div class="chartLabel">{{=it.stats.pools[pool].name}}</div>
+        <div class="chartHolder">
+            <div id="rows">
+            <table class="pure-table">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Shares</th>
+                        <th>Invalid shares</th>
+                        <th>Efficiency</th>
+                        <th>Hashrate</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td>Be with you in a sec...</td>
+                </tr>
+            </table>
+            </div>
+        </div>
+    </div>
+{{ } }}
+
+<!-- 
+    Created By: Leif
+    Created On: 202110731
+    Purpose: create table with requested worker info
+    
+    Notes: 
+    . worker = window.location.search.substring(1).split('.')
+    . this array will split at the '.'', however [0] will always have the worker address, [1] may be blank or contain rig name
+-->
+<script>
+    // this function expects worker in form: address.rig (i.e. 1234567abcd890.rigname)
+    async function getWorker(rig) {                            
+        const res = await fetch('/api/stats');
+        const jsn = await res.json();
+        
+        // make the HTML pretty...
+        let html = '<table class="pure-table">\
+            <thead>\
+                <tr>\
+                    <th>Address</th>\
+                    <th>Shares</th>\
+                    <th>Invalid shares</th>\
+                    <th>Efficiency</th>\
+                    <th>Hashrate</th>\
+                    <th>Rig</th>\
+                </tr>\
+            </thead>';
+        // there may be multiple rigs for same address
+        for (j in jsn.pools.ergo.workers) {
+            if (rig[0] != j.split('.')[0]) { continue; }
+            let shr = jsn.pools.ergo.workers[j].shares
+            let inv = jsn.pools.ergo.workers[j].invalidshares
+            html += '\
+                <tr class="pure-table-odd">\
+                    <td>'+(j.split('.')[0])+'</td>\
+                    <td>'+shr+'</td>\
+                    <td>'+inv+'</td>\
+                    <td>'+(shr > 0 ? Math.floor(10000 * shr / (shr + inv)) / 100 : 0)+'%</td>\
+                    <td>'+(jsn.pools.ergo.workers[j].hashrateString)+'</td>\
+                    <td>'+(j.split('.')[1] == undefined ? '' : j.split('.')[1])+'</td>\
+                </tr>';
+        }
+        html += '</table>'
+        
+        // typically replaces div
+        return html;
+    }
+    
+    // get worker info; requires async call since this is an API, so slow call may look blank
+    getWorker(window.location.search.substring(1).split('.'))
+        .then(html => document.getElementById('rows').innerHTML = html)
+</script>

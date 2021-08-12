@@ -8,10 +8,7 @@ html{
 }
 
 body{
-    display: flex;
-    flex-direction: column;
-    max-width: 1160px;
-    margin: 0 auto;
+
 }
 
 header > .home-menu{
@@ -45,8 +42,7 @@ header > .home-menu > ul > li > a:hover, header > .home-menu > ul > li.pure-menu
 }
 
 main{
-    background-color: #ebf4fa;
-    position: relative;
+
 }
 
 footer{

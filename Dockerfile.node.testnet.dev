@@ -1,0 +1,10 @@
+FROM openjdk
+
+# ENV DEBUG true
+
+RUN mkdir /var/ergo
+COPY ./node/ergo-4.0.13.jar /var/ergo/ergo.jar
+COPY ./node/testnet.conf /var/ergo/ergo.conf
+WORKDIR /var/ergo
+
+ENTRYPOINT java -jar ergo.jar --testnet -c ergo.conf
