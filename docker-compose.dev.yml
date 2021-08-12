@@ -4,16 +4,13 @@ services:
   ergonode:
     build: 
       context: .
-      ## dockerfile: Dockerfile.node.dev
-      dockerfile: Dockerfile.node.testnet.dev
+      dockerfile: Dockerfile.node.dev
     container_name: ergonode
   #  environment:
   #    - DEBUG=1
-    volumes: ['/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo']
-    ## volumes: ['/var/ergo/mainnet.primary/.ergo:/var/ergo/.ergo']
+    volumes: ['/var/ergo/mainnet.primary/.ergo:/var/ergo/.ergo']
     ports:
-      ## - "9053:9053" ## mainnet
-      - "9053:9052" ## testnet
+      - "9053:9053" ## mainnet
   #  deploy:
   #    restart_policy:
   #      condition: always

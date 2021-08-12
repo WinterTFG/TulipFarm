@@ -1,15 +1,13 @@
-
 version: "3.3"
 
 services:
   ergonode:
     build: 
       context: .
-      dockerfile: Dockerfile.node.dev
+      dockerfile: Dockerfile.node
     container_name: ergonode
   #  environment:
   #    - DEBUG=1
-    #volumes: ['/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo']
     volumes: ['/var/ergo/mainnet.primary/.ergo:/var/ergo/.ergo']
     ports:
       - "9053:9053"
@@ -22,7 +20,7 @@ services:
   ergopool:
     build: 
       context: .
-      dockerfile: Dockerfile.pool.dev
+      dockerfile: Dockerfile.pool
     container_name: ergopool
     ports: 
       - "3032:3032" # 
