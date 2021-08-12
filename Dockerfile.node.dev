@@ -3,7 +3,7 @@ FROM openjdk
 # ENV DEBUG true
 
 RUN mkdir /var/ergo
-COPY ./node/ergo-4.0.12.jar /var/ergo/ergo.jar
+COPY ./node/ergo-4.0.13.jar /var/ergo/ergo.jar
 COPY ./node/ergo.conf /var/ergo/ergo.conf
 WORKDIR /var/ergo
 
