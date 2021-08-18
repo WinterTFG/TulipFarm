@@ -260,7 +260,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 percent: percent / 100
             };
             try {
-                if (r.length === 51)
+                if ((r.length === 51) || (r.length === 52))
                     rObj.script = util.miningKeyToScript(r);
                 else
                     rObj.script = util.addressToScript(r);
