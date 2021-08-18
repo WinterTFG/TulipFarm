@@ -14,6 +14,17 @@ services:
       - "9053:9052" # rempap for config files
     depends_on:
       - ergoredis
+    # command: ["java", "-jar", "ergo.jar", "--testnet", "-c", "ergo.conf"]
+
+  ergopayout:
+    build:
+      context: .
+      dockerfile: Dockerfile.payout
+    container_name: ergopayout
+    volumes: ['/var/git/TulipFarm/payout:/app']
+    ports:
+      - "80:80"    
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--debug", "--port", "80", "--reload-dir", "/app"]
 
   ergopool:
     build: 

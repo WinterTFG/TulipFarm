@@ -17,12 +17,21 @@ services:
     depends_on:
       - ergoredis
 
+  ergopayout:
+    build:
+      context: .
+      dockerfile: Dockerfile.payout
+    container_name: ergopayout
+    volumes: ['/var/git/TulipFarm/payout:/app']
+    ports:
+      - "80:80"    
+
   ergopool:
     build: 
       context: .
       dockerfile: Dockerfile.pool.dev
     container_name: ergopool
-    volumes: ['/var/git/ergowinter/pool:/var/ergo']
+    volumes: ['/var/git/TulipFarm/pool:/var/ergo']
     ports: 
       - "3032:3032" # 
       - "8008:8008" # stratum
