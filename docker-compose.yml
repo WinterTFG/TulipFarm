@@ -17,6 +17,15 @@ services:
     depends_on:
       - ergoredis
 
+  ergopayout:
+    build:
+      context: .
+      dockerfile: Dockerfile.payout
+    container_name: ergopayout
+    volumes: ['/var/ergo/payout:/var/ergo/payout']
+    ports:
+      - "80:80"    
+
   ergopool:
     build: 
       context: .

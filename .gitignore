@@ -1,10 +1,6 @@
 # IDE
 .idea/
 
-# Node.js
-node_modules/
-package-lock.json
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -137,10 +133,6 @@ dmypy.json
 
 # VS Code
 .vscode
-
-# pycryptobot
-config*.json
-config*.py
 
 # misc
 *.csv
