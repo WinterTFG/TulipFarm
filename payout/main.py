@@ -95,7 +95,7 @@ def ProcessBlocks():
     red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
 
     try :
-        blockInfo = getBlockInfo()
+        blockInfo = json.loads(GetBlockInfo()) # convert result to dict
         miners = blockInfo['miners']
         blocks = blockInfo['blocks']
         rows = [] # prepare for dataframe
@@ -179,6 +179,28 @@ def VerifyPayments():
     logging.debug('paid')
 
 
+def GetMinerInfo(id):
+    con = sqlite3.connect(db)
+
+    try:
+        df = pd.read_sql_query(f"select * from payouts where worker = '{id}'", con=con)        
+
+    except Exception as e:
+        logging.error(e)
+
+    return df.to_json(orient='records')
+
+def GetMiners():
+    con = sqlite3.connect(db)
+
+    try:
+        df = pd.read_sql_query(f"select distinct worker, rig from payouts", con=con)        
+
+    except Exception as e:
+        logging.error(e)
+
+    return df.to_json(orient='records')
+
 def ArchivePayments():
     logging.debug('paid')
 
@@ -223,30 +245,37 @@ def go_home():
 # check redis for any new blocks that pool has mined
 @app.get("/payout/block/info")
 async def BlockInfo():
-    res = GetBlockInfo()
-    return res
+    return GetBlockInfo()
 
 # new -> waiting
 @app.get("/payout/block/process")
 async def BlockProcess():
-    res = ProcessBlocks()
-    return res
+    return ProcessBlocks()
+
+# archive old blocks already paid
+@app.get("/payout/block/archive/{id}")
+async def Archive(id):
+    return {"archive": f"below height: {id}"}
 
 # pay miners
 @app.get("/payout/miner/process")
 async def MinerProcess():
-    res = ProcessPayouts()
-    return res
+    return ProcessPayouts()
+
+# miner info
+@app.get("/payout/miner/{id}")
+async def MinerInfo(id):
+    return GetMinerInfo(id)
+
+# all miner/rig combos
+@app.get("/payout/miners")
+async def Miners():
+    return GetMiners()
 
 # archive old blocks already paid
 @app.get("/payout/miner/verify")
 async def MinerVerify():
     return {"miner": "verify"}
-
-# archive old blocks already paid
-@app.get("/payout/archive")
-async def Archive():
-    return {"archive": "this"}
 
 ###
 ### MAIN

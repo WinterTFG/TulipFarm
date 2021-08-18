@@ -16,7 +16,7 @@ RUN DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends 
     nano \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm rebuild
+RUN npm install
 RUN npm i -g nodemon
 
 ENTRYPOINT node init.js
