@@ -169,7 +169,7 @@
                     
                         <div class="col-lg-4 col-md-6">
                             <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Network Info</strong></div>
+                                <div class="title"><strong>Blocks Mined</strong></div>
 
                     
                                 <div class="table-responsive"> 
@@ -185,15 +185,15 @@
                                       <tbody>
             
                                         <tr>
-                                            <td>Some: </td>
+                                            <td>24 Hours: </td>
                                             <td>.</td>
                                         </tr>
                                         <tr>
-                                            <td>Other: </td>
+                                            <td>7 Days: </td>
                                             <td>.</td>
                                         </tr>
                                         <tr>
-                                            <td>Info: </td>
+                                            <td>30 Days: </td>
                                             <td>.</td>
                                           </tr>
             
@@ -213,9 +213,38 @@
                     
                         <div class="col-lg-12 col-md-12">
                             <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Pool data</strong></div>
+                                <div class="title"><strong>Blocks</strong></div>
                                 <div class="chart">
-                                    <p>paginated pool data, list of all blocks mined, list of all workers</p>
+                                    <p>paginated list of blocks mined</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12 col-md-12">
+                            <div class="block chart margin-bottom-sm">
+                                <div class="title"><strong>Workers</strong></div>
+                                <div class="table-responsive">
+                                    {{ for(var pool in it.stats.pools) { }}
+                                            <table class="table">
+                                                <thead>
+                                                <tr>
+                                                    <th>Address</th>
+                                                    <th>Efficiency</th>
+                                                    <th>Hashrate</th>
+                                                </tr>
+                                                </thead>
+                                                {{ for(var worker in it.stats.pools[pool].workers) { }}
+                                                {{var workerstat = it.stats.pools[pool].workers[worker];}}
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{=worker}}</td>
+                                                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
+                                                        <td>{{=workerstat.hashrateString}}</td>
+                                                    </tr>
+                                                </tbody>
+                                                {{ } }}
+                                            </table>
+                                    {{ } }}
                                 </div>
                             </div>
                         </div>
@@ -252,7 +281,7 @@
 
     function getRoundedNetworkDiff(diff){
         var i = -1;
-        var byteUnits = [ ' K', ' M', ' B', ' T', ' Qa', ' Qi' ];
+        var byteUnits = [ ' K', ' M', ' G', ' T', ' P'];
         do {
             diff = diff / 1000;
             i++;

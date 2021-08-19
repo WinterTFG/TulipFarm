@@ -31,7 +31,7 @@ minPayout = 10 # ergs
 ###
 ### FUNCTIONS
 ###
-def GetBlockInfo():
+def GetBlockInfo(showMinerInfo=False):
 
     red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
     adr = json.loads(requests.get(f'http://{nho}:{nod}/mining/rewardAddress').content)['rewardAddress']
@@ -52,8 +52,26 @@ def GetBlockInfo():
                     'fee': fee,
                     'totalShares': 0,
                     'rewardAmount_sat': 0,
-                    'totalAmountAfterFee_sat': 0
+                    'totalAmountAfterFee_sat': 0,
+                    'status': 'missing',
+                    'difficulty': -1,
+                    'timestamp': -1
                 }                
+
+                blockDetails = {}
+                try:
+                    blockHeader = json.loads(requests.get(f'http://{nho}:{nod}/blocks/at/{round}', headers=hdr).content)[0]
+                    blockDetails = json.loads(requests.get(f'http://{nho}:{nod}/blocks/{blockHeader}', headers=hdr).content)
+
+                    # keep what we can
+                    if 'header' in blockDetails:
+                        if 'timestamp' in blockDetails['header']: blocks[round]['timestamp'] = blockDetails['header']['timestamp']
+                        if 'difficulty' in blockDetails['header']: blocks[round]['difficulty'] = blockDetails['header']['difficulty']
+
+                except Exception as e:
+                    logging.error(e)
+                    pass
+
                 # now sum shares by miner
                 shares = red.hgetall(f'ergo:shares:round{round}')
                 for s in shares:
@@ -73,21 +91,28 @@ def GetBlockInfo():
             # search all transactions for payments to reward address
             for o in x['outputs']:
 
-                # only accept with scans=9
-                if 9 in x['scans']:
+                # transaction details
+                if o['address'] == adr:                        
+                    round = str(o['creationHeight'])
 
-                    # transaction details
-                    if o['address'] == adr:                        
-                        round = str(o['creationHeight'])
-                        if round in blocks:
-                            blocks[round]['rewardAmount_sat'] = int(o['value']) # satoshis
-                            blocks[round]['fee'] = fee
-                            blocks[round]['totalAmountAfterFee_sat'] = int(o['value'] - o['value']*fee)
+                    if round in blocks:
+                        blocks[round]['rewardAmount_sat'] = int(o['value']) # satoshis
+                        blocks[round]['fee'] = fee
+                        blocks[round]['totalAmountAfterFee_sat'] = int(o['value'] - o['value']*fee)
+
+                    # scans=9 is confirmed
+                    if 9 in x['scans']:
+                        blocks[round]['status'] = 'confirmed'
+                    else:
+                        blocks[round]['status'] = 'unconfirmed'
 
     except Exception as e:
         logging.error(f'getTransactionInfo::{e}')
 
-    return json.dumps({'miners': miners, 'blocks': blocks})
+    if showMinerInfo:
+        return json.dumps({'miners': miners, 'blocks': blocks})
+    else:
+        return json.dumps(blocks)
 
 
 def ProcessBlocks():
@@ -95,7 +120,7 @@ def ProcessBlocks():
     red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
 
     try :
-        blockInfo = json.loads(GetBlockInfo()) # convert result to dict
+        blockInfo = json.loads(GetBlockInfo(True)) # convert result to dict
         miners = blockInfo['miners']
         blocks = blockInfo['blocks']
         rows = [] # prepare for dataframe
@@ -245,7 +270,12 @@ def go_home():
 # check redis for any new blocks that pool has mined
 @app.get("/payout/block/info")
 async def BlockInfo():
-    return GetBlockInfo()
+    return GetBlockInfo(False)
+
+# check redis for any new blocks that pool has mined
+@app.get("/payout/block/miner")
+async def BlockMiner():
+    return GetBlockInfo(True)
 
 # new -> waiting
 @app.get("/payout/block/process")

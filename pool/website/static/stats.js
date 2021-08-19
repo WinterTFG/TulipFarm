@@ -21,7 +21,7 @@ function buildChartData(){
         }
     }
 
-    console.log(statData);
+    // console.log(statData);
 
     for (var i = 0; i < statData.length; i++){
 
