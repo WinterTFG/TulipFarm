@@ -237,27 +237,6 @@ module.exports = function(logger){
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    // handle request for worker info
-    app.get('/workers/:id', function (req, res, next){
-
-        res.header('Content-Type', 'text/html');
-
-        let id = req.params.id;
-        if (req.params.id) {
-            // getWorker(req.params.id);
-            res.end(indexesProcessed['workers']);
-            return;
-        }
-        else {
-            // probably should error or default somewhere here; debugging to show what was returned
-            res.end('worker name incorrect length: '+JSON.stringify(id))
-            // this seems to use /static/stats.js, but relative path from /worker/., rather than / 
-            // res.end(indexesProcessed['stats']);
-        }
-        next();
-    }); 
-
-
     app.get('/get_page', function(req, res, next){
         var requestedPage = getPage(req.query.id);
         if (requestedPage){
@@ -266,6 +245,26 @@ module.exports = function(logger){
         }
         next();
     });
+
+         // handle request for worker info
+         app.get('/workers/:id', function (req, res, next){
+
+            res.header('Content-Type', 'text/html');
+    
+            let id = req.params.id;
+            if (req.params.id) {
+                // getWorker(req.params.id);
+                res.end(indexesProcessed['workers']);
+                return;
+            }
+            else {
+                // probably should error or default somewhere here; debugging to show what was returned
+                res.end('worker name incorrect length: '+JSON.stringify(id))
+                // this seems to use /static/stats.js, but relative path from /worker/., rather than / 
+                // res.end(indexesProcessed['stats']);
+            }
+            next();
+        });  
 
     app.get('/key.html', function(req, res, next){
         res.end(keyScriptProcessed);

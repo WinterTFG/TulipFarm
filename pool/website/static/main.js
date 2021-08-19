@@ -30,8 +30,8 @@ $(function(){
     const queryString = new URLSearchParams(window.location.search);
 
         if (queryString.has("search")) {
-            var newSearch = "workers/" + queryString.get("search");
-            history.pushState(null, null, '/' + newSearch);
+            var newSearch = queryString.get("search");
+            window.location.replace('/workers/' + newSearch);
         }
 
 });
