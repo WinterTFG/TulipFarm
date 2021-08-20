@@ -39,21 +39,24 @@ def GetBlockInfo(showMinerInfo=False):
 
     miners = {} # miner = worker.rig
     blocks = {}
+    mrb = {} # most recent block
 
     try:
         # search all redis keys in this format
         for k in red.keys():             
             # match format using regex
-            m = re.search('^ergo:shares:round(?P<round>\d+)$', k)
+            m = re.search('^ergo:shares:(?P<stype>round|payout)(?P<round>\d+)$', k)
             if m:
                 round = m.group('round')
+                stype = m.group('stype')
                 miners[round] = {}
                 blocks[round] = {
                     'fee': fee,
                     'totalShares': 0,
                     'rewardAmount_sat': 0,
                     'totalAmountAfterFee_sat': 0,
-                    'status': 'missing',
+                    'status': 'unconfirmed',
+                    'shareType': stype,
                     'difficulty': -1,
                     'timestamp': -1
                 }                
@@ -84,6 +87,21 @@ def GetBlockInfo(showMinerInfo=False):
                     miners[round][s]['worker'] = s.split('.')[0]
                     if len(s.split('.')) == 1: miners[round][s]['rig'] = '' # only worker name
                     else: miners[round][s]['rig'] = s.split('.')[1] # worker.rig
+                    miners[round][s]['shareType'] = 'round'
+
+                # now sum shares by miner
+                shares = red.hgetall(f'ergo:shares:payout{round}')
+                for s in shares:
+                    share = int(shares[s])
+                    # tally total blocks
+                    blocks[round]['totalShares'] += share
+                    # tally miner blocks
+                    if s not in miners[round]: miners[round][s] = {'shares': 0}
+                    miners[round][s]['shares'] += share # add shares                    
+                    miners[round][s]['worker'] = s.split('.')[0]
+                    if len(s.split('.')) == 1: miners[round][s]['rig'] = '' # only worker name
+                    else: miners[round][s]['rig'] = s.split('.')[1] # worker.rig
+                    miners[round][s]['shareType'] = 'payout'
 
         # complete block information
         for x in xac:
@@ -106,11 +124,15 @@ def GetBlockInfo(showMinerInfo=False):
                     else:
                         blocks[round]['status'] = 'unconfirmed'
 
+        # find most recent block
+        for b in blocks:
+            mrb[blocks[b]['timestamp']] = b
+
     except Exception as e:
         logging.error(f'getTransactionInfo::{e}')
 
     if showMinerInfo:
-        return json.dumps({'miners': miners, 'blocks': blocks})
+        return json.dumps({'miners': miners, 'blocks': blocks, 'mostRecentBlock': {'block': mrb[max(mrb)], 'timestamp': max(mrb)}})
     else:
         return json.dumps(blocks)
 
@@ -125,9 +147,13 @@ def ProcessBlocks():
         blocks = blockInfo['blocks']
         rows = [] # prepare for dataframe
         rounds = {}
+
         for block in miners:
+
             for miner in miners[block]:
-                if blocks[block]['rewardAmount_sat'] > 0:
+
+                # make sure there is an actual reward, and shareType = round (don't double pay)
+                if (blocks[block]['rewardAmount_sat'] > 0) and (blocks[block]['shareType'] == 'round') and (miners[block][miner]['shareType'] == 'round'):
                     totalAmountAfterFee_sat = int(blocks[block]['rewardAmount_sat']) - (int(blocks[block]['rewardAmount_sat'])*fee)
                     workerShares_erg = (int(miners[block][miner]['shares'])/int(blocks[block]['totalShares'])) * totalAmountAfterFee_sat / 1000000000
                     rows.append([block, miner, miners[block][miner]['worker'], miners[block][miner]['rig'], 'waiting', miners[block][miner]['shares'], workerShares_erg, blocks[block]['rewardAmount_sat'], fee, blocks[block]['totalShares'], totalAmountAfterFee_sat, '', 0.0, '', datetime.now().isoformat(), '', ''])
@@ -215,6 +241,30 @@ def GetMinerInfo(id):
 
     return df.to_json(orient='records')
 
+
+def GetMinerEarnings(id, minute):
+    con = sqlite3.connect(db)
+
+    try:
+        df = pd.read_sql_query(f"""
+            with tot as (
+	            select distinct block, worker, workerShares_erg
+	            from payouts
+	            where _timestampWaiting > date('now', '-{minute} minutes')
+            )
+            select worker, sum(workerShares_erg) as ergs
+            from tot
+            where worker = '{id}'
+            """, con=con)
+
+        return df.to_json(orient='records')
+    
+    except Exception as e:
+        logging.error(e)
+
+    return (json.dumps({}))
+
+
 def GetMiners():
     con = sqlite3.connect(db)
 
@@ -225,6 +275,7 @@ def GetMiners():
         logging.error(e)
 
     return df.to_json(orient='records')
+
 
 def ArchivePayments():
     logging.debug('paid')
@@ -296,6 +347,11 @@ async def MinerProcess():
 @app.get("/payout/miner/{id}")
 async def MinerInfo(id):
     return GetMinerInfo(id)
+
+# miner earnings
+@app.get("/payout/miner/earnings/{id}/{minute}")
+async def MinerEarnings(id, minute):
+    return GetMinerEarnings(id, minute)
 
 # all miner/rig combos
 @app.get("/payout/miners")
