@@ -17,7 +17,13 @@ app = FastAPI()
 ###
 ### INIT
 ###
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+### CRITICAL 50
+### ERROR 40
+### WARNING 30
+### INFO 20
+### DEBUG 10
+### NOTSET 0
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 rho = 'ergoredis'
 rds = '6379'
@@ -32,16 +38,16 @@ dbp = '5432'
 
 minPayout = 10 # ergs
 
-con = create_engine('postgresql://winter:t00lip@ergodb:5432/winter')
+con = create_engine(f'postgresql://winter:t00lip@{dbo}:{dbp}/winter')
 red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
+adr = json.loads(requests.get(f'http://{nho}:{nod}/mining/rewardAddress').content)['rewardAddress']
 
 ###
 ### FUNCTIONS
 ###
 def GetBlockInfo(showMinerInfo=False):
 
-    red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
-    adr = json.loads(requests.get(f'http://{nho}:{nod}/mining/rewardAddress').content)['rewardAddress']
+    # red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
     xac = json.loads(requests.get(f'http://{nho}:{nod}/wallet/transactions?minInclusionHeight=0', headers=hdr).content)
 
     miners = {} # miner = worker.rig

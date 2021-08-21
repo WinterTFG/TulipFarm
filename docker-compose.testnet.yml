@@ -4,7 +4,7 @@ services:
   ergonode:
     build: 
       context: .
-      dockerfile: Dockerfile.node.testnet.dev
+      dockerfile: Dockerfile.node.testnet
     container_name: ergonode
   #  environment:
   #    - DEBUG=1
@@ -30,7 +30,7 @@ services:
   ergopool:
     build: 
       context: .
-      dockerfile: Dockerfile.pool.dev
+      dockerfile: Dockerfile.pool.testnet
     container_name: ergopool
     volumes: 
       - '/var/git/TulipFarm/pool:/var/ergo'
