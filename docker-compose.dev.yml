@@ -53,3 +53,13 @@ services:
       - /var/redis/dev:/data
     entrypoint: redis-server --appendonly yes
 
+  ergodb:
+    image: postgres:13-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: winter
+      POSTGRES_PASSWORD: t00lip
+      PGDATA: /var/ergo/db/mainnet/data:/var/lib/postgresql/data
+

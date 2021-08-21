@@ -10,6 +10,7 @@ import time
 
 from datetime import datetime
 from fastapi import FastAPI
+from sqlalchemy import create_engine
 
 app = FastAPI()
 
@@ -25,8 +26,14 @@ nod = '9052'
 fee = 0.007 # pool fee .7%
 hdr = {'api_key': 'oncejournalstrangeweather'}
 tbl = 'payouts'
-db  = 'payouts.db'
+#db = 'payouts.db'
+dbo = 'ergodb'
+dbp = '5432'
+
 minPayout = 10 # ergs
+
+con = create_engine('postgresql://winter:t00lip@ergodb:5432/winter')
+red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
 
 ###
 ### FUNCTIONS
@@ -39,7 +46,7 @@ def GetBlockInfo(showMinerInfo=False):
 
     miners = {} # miner = worker.rig
     blocks = {}
-    mrb = {} # most recent block
+    mrb = {0: 0} # most recent block; init blank
 
     try:
         # search all redis keys in this format
@@ -138,9 +145,6 @@ def GetBlockInfo(showMinerInfo=False):
 
 
 def ProcessBlocks():
-    con = sqlite3.connect(db)
-    red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
-
     try :
         blockInfo = json.loads(GetBlockInfo(True)) # convert result to dict
         miners = blockInfo['miners']
@@ -156,7 +160,7 @@ def ProcessBlocks():
                 if (blocks[block]['rewardAmount_sat'] > 0) and (blocks[block]['shareType'] == 'round') and (miners[block][miner]['shareType'] == 'round'):
                     totalAmountAfterFee_sat = int(blocks[block]['rewardAmount_sat']) - (int(blocks[block]['rewardAmount_sat'])*fee)
                     workerShares_erg = (int(miners[block][miner]['shares'])/int(blocks[block]['totalShares'])) * totalAmountAfterFee_sat / 1000000000
-                    rows.append([block, miner, miners[block][miner]['worker'], miners[block][miner]['rig'], 'waiting', miners[block][miner]['shares'], workerShares_erg, blocks[block]['rewardAmount_sat'], fee, blocks[block]['totalShares'], totalAmountAfterFee_sat, '', 0.0, '', datetime.now().isoformat(), '', ''])
+                    rows.append([block, miner, miners[block][miner]['worker'], miners[block][miner]['rig'], 'waiting', miners[block][miner]['shares'], workerShares_erg, blocks[block]['rewardAmount_sat'], fee, blocks[block]['totalShares'], totalAmountAfterFee_sat, '', 0.0, '', datetime.now().isoformat(), None, None])
                     rounds[block] = 0 # get distinct list; rather than append to list
         
         # add new shares to waiting status
@@ -177,7 +181,6 @@ def ProcessBlocks():
 
 
 def ProcessPayouts():
-    con = sqlite3.connect(db)
     payments = []
 
     try:
@@ -192,30 +195,27 @@ def ProcessPayouts():
             logging.debug(f'log payment info for {r.worker}, batch: {batch}')
             bdy = [{'address': r.worker, 'value': int(r.workerShares_erg*1000000000), 'assets': []}]
             res = requests.post(f'http://{nho}:{nod}/wallet/payment/send', headers=hdr, json=bdy)
+            tid = json.loads(res.content)
             logging.info(f'Payment sent: {json.loads(res.content)}')
             if res.status_code == 200:
                 payments.append({
                     'batch': batch,
                     'payoutBatchAmount_ergs': r.workerShares_erg,
-                    'totalBatchShares': -1,
-                    'totalBatchReward': 67.5,
-                    'transactionId': json.loads(res.content),
-                    'shares': r.shares,
+                    'transactionId': tid,
                     'worker': r.worker,
-                    'rig': r.rig,
                     'timestamp': datetime.now().isoformat(),
                     'status': 'pending'
                 })
-                with sqlite3.connect(db) as sql:
+                with con.connect() as sql:
                     sql.execute(f"""
                         update {tbl} 
-                        set pendingBatchId = '{batch}'
-                            , payoutBatchAmount_erg = {r.workerShares_erg}
-                            , _timestampPending = '{datetime.now().isoformat()}'
-                            , paidTransactionId = '{json.loads(res.content)}'
-                            , status = 'pending'
+                        set "pendingBatchId" = '{batch}'
+                            , "payoutBatchAmount_erg" = {r.workerShares_erg}
+                            , "_timestampPending" = '{datetime.now().isoformat()}'
+                            , "paidTransactionId" = '{json.loads(res.content)}'
+                            , "status" = 'pending'
                         where worker = '{r.worker}'
-                            and status = 'waiting'
+                            and "status" = 'waiting'
                         """)
             else:
                 logging.error(f'Payment not sent: {res.content}')
@@ -231,8 +231,6 @@ def VerifyPayments():
 
 
 def GetMinerInfo(id):
-    con = sqlite3.connect(db)
-
     try:
         df = pd.read_sql_query(f"select * from payouts where worker = '{id}'", con=con)        
 
@@ -243,8 +241,6 @@ def GetMinerInfo(id):
 
 
 def GetMinerEarnings(id, minute):
-    con = sqlite3.connect(db)
-
     try:
         df = pd.read_sql_query(f"""
             with tot as (
@@ -266,8 +262,6 @@ def GetMinerEarnings(id, minute):
 
 
 def GetMiners():
-    con = sqlite3.connect(db)
-
     try:
         df = pd.read_sql_query(f"select distinct worker, rig from payouts", con=con)        
 
@@ -282,11 +276,10 @@ def ArchivePayments():
 
 
 def initPayouts():
-    db = 'payouts.db'
-    with sqlite3.connect(db) as sql:
+    with con.connect() as sql:
         sql.execute("drop table payouts")
 
-    with sqlite3.connect(db) as sql:
+    with con.connect() as sql:
         sql.execute("""
             create table if not exists payouts (
                 id integer not null primary key autoincrement,
