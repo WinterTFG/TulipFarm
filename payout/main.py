@@ -10,9 +10,25 @@ import time
 
 from datetime import datetime
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine
 
 app = FastAPI()
+
+origins = [
+    "http://www.tulipfarm.one",
+    "http://tulipfarm.one",
+    "http://www.tulipfarm.one:2127",
+    "http://tulipfarm.one:2127",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ###
 ### INIT
@@ -23,13 +39,14 @@ app = FastAPI()
 ### INFO 20
 ### DEBUG 10
 ### NOTSET 0
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 rho = 'ergoredis'
 rds = '6379'
 nho = 'ergonode'
 nod = '9052'
 fee = 0.007 # pool fee .7%
+rwd = 67.5 # current estimate, used for uncofirmed calc
 hdr = {'api_key': 'oncejournalstrangeweather'}
 tbl = 'payouts'
 #db = 'payouts.db'
@@ -165,14 +182,14 @@ def ProcessBlocks():
                 # make sure there is an actual reward, and shareType = round (don't double pay)
                 if (blocks[block]['rewardAmount_sat'] > 0) and (blocks[block]['shareType'] == 'round') and (miners[block][miner]['shareType'] == 'round'):
                     totalAmountAfterFee_sat = int(blocks[block]['rewardAmount_sat']) - (int(blocks[block]['rewardAmount_sat'])*fee)
-                    workerShares_erg = (int(miners[block][miner]['shares'])/int(blocks[block]['totalShares'])) * totalAmountAfterFee_sat / 1000000000
+                    workerShares_erg = (int(miners[block][miner]['shares'])/int(blocks[block]['totalShares'])) * totalAmountAfterFee_sat / 1000000
                     rows.append([block, miner, miners[block][miner]['worker'], miners[block][miner]['rig'], 'waiting', miners[block][miner]['shares'], workerShares_erg, blocks[block]['rewardAmount_sat'], fee, blocks[block]['totalShares'], totalAmountAfterFee_sat, '', 0.0, '', datetime.now().isoformat(), None, None])
                     rounds[block] = 0 # get distinct list; rather than append to list
         
         # add new shares to waiting status
         df = pd.DataFrame(rows, columns=['block', 'miner', 'worker', 'rig', 'status', 'workerShares', 'workerShares_erg', 'blockReward_sat', 'poolFee_pct', 'totalBlockShares', 'totalAmountAfterFee_sat', 'pendingBatchId', 'payoutBatchAmount_erg', 'paidTransactionId', '_timestampWaiting', '_timestampPending', '_timestampPaid'])
         if len(df) > 0:
-            logging.info('saving new shares to database...')
+            logging.info(f'saving {len(df)} new shares to database...')
             df.to_sql('payouts', if_exists='append', con=con, index=False)
         
         # update rounds so that are not counted again
@@ -195,15 +212,16 @@ def ProcessPayouts():
         dfPending = dfTotals[dfTotals['workerShares_erg'] >= minPayout]
 
         for r in dfPending.itertuples():
-            logging.info(f'make payment to worker, {r.worker}...')
+            logging.info(f'pay {r.workerShares_erg:.2f} ergs to worker, {r.worker}...')
 
             batch = str(uuid.uuid4())
             logging.debug(f'log payment info for {r.worker}, batch: {batch}')
-            bdy = [{'address': r.worker, 'value': int(r.workerShares_erg*1000000000), 'assets': []}]
+            bdy = [{'address': r.worker, 'value': int(float(r.workerShares_erg)*1000000), 'assets': []}]
+            logging.debug(f'{type(bdy)}; {bdy}')
             res = requests.post(f'http://{nho}:{nod}/wallet/payment/send', headers=hdr, json=bdy)
-            tid = json.loads(res.content)
-            logging.info(f'Payment sent: {json.loads(res.content)}')
             if res.status_code == 200:
+                logging.info(f'Payment sent: {json.loads(res.content)}')
+                tid = res.json()
                 payments.append({
                     'batch': batch,
                     'payoutBatchAmount_ergs': r.workerShares_erg,
@@ -224,7 +242,7 @@ def ProcessPayouts():
                             and "status" = 'waiting'
                         """)
             else:
-                logging.error(f'Payment not sent: {res.content}')
+                logging.error(f'Payment not sent: STATUS CODE={res.status_code}::{res.json()}')
 
     except Exception as e:
         logging.error(f'handlePayouts::{e}')
@@ -249,15 +267,41 @@ def GetMinerInfo(id):
 def GetMinerEarnings(id, minute):
     try:
         df = pd.read_sql_query(f"""
-            with tot as (
-	            select distinct block, worker, workerShares_erg
-	            from payouts
-	            where _timestampWaiting > date('now', '-{minute} minutes')
+		    with tot as (
+                    select distinct block, worker, "workerShares_erg"
+						, case 
+							when "_timestampPending" > current_timestamp - ({minute} * interval '1 minute') then 'pending'
+							else 'waiting'
+						end as status
+                    from payouts
+                    where "_timestampWaiting" > current_timestamp - ({minute} * interval '1 minute')
             )
-            select worker, sum(workerShares_erg) as ergs
+            select "worker", "status", sum("workerShares_erg") as ergs
             from tot
             where worker = '{id}'
+			group by "worker", "status"
             """, con=con)
+
+        tot = 0
+        shr = 0
+        blk = 0
+        for k in red.keys():             
+            # only unconfirmed
+            m = re.search('^ergo:shares:(?P<stype>round)(?P<round>\d+)$', k)
+            if m:
+                round = m.group('round')
+                shares = red.hgetall(f'ergo:shares:round{round}')
+                for s in shares:
+                    share = int(shares[s])
+                    blk += 1
+                    # tally total blocks
+                    tot += share
+                    # tally miner blocks
+                    if s.split('.')[0] == id:
+                        shr += share
+                blk += (shr/tot)*rwd-(fee*rwd)
+        if tot > 0:
+            df = df.append(pd.DataFrame([[id, f'unconfirmed {shr}', blk]], columns=['worker', 'status', 'ergs']))
 
         return df.to_json(orient='records')
     
@@ -310,6 +354,63 @@ def initPayouts():
         """)
 
 
+def GetStatsBlocks(st, nd):
+    res = {
+        'row': {},
+        'totalRows': 0
+    }
+    try:
+        totalRows = len(red.keys()) or 0
+        nd = int(nd)
+        st = int(st)
+        res['totalRows'] = totalRows
+        if nd >= totalRows:
+            nd = totalRows
+        blocks = {}
+        for k in red.keys():
+            logging.debug(k)
+            m = re.search('^ergo:shares:(?P<stype>round|payout)(?P<round>\d+)$', k)
+            if m:
+                blocks[m.group('round')] = {
+                    'block': 0,
+                    'timestamp': 0,
+                    'status': 'Confirmed',
+                    'reward': 0.0
+                }
+        for k, v in list(reversed(sorted(blocks.items())))[st-1:nd-1]:
+            blockHeader = json.loads(requests.get(f'http://{nho}:{nod}/blocks/at/{k}', headers=hdr).content)[0]
+            blockDetails = json.loads(requests.get(f'http://{nho}:{nod}/blocks/{blockHeader}', headers=hdr).content)
+            logging.debug(blockDetails)
+            res['row'][k] = {
+                'dateMined': 0,
+                'status': 'Pending',
+                'reward': 0
+            }
+            if 'blockTransactions' in blockDetails:
+
+                if 'transactions' in blockDetails['blockTransactions']:
+                    for x in blockDetails['blockTransactions']['transactions']:
+
+                        if 'outputs' in x:
+                            for o in x['outputs']:
+
+                                # transaction details
+                                if o['transactionId'] == adr:
+                                    round = str(o['creationHeight'])
+
+                                    if round in blocks:
+                                        res['row'][k] = {
+                                            'dateMined': o['timestamp'],
+                                            'status': 'Confirmed',
+                                            'reward': float(o['value'])/1000000.0
+                                        }
+                        
+
+    except Exception as e:
+        logging.error(e)
+
+    return json.dumps(res)
+
 ###
 ### ROUTES
 ###
@@ -361,6 +462,11 @@ async def Miners():
 @app.get("/payout/miner/verify")
 async def MinerVerify():
     return {"miner": "verify"}
+
+# site last blocks
+@app.get("/stats/blocks/{startRow}/{endRow}")
+async def StatsBlocks(startRow, endRow):
+    return GetStatsBlocks(startRow, endRow)
 
 ###
 ### MAIN

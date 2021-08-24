@@ -45,14 +45,6 @@
 
                     <div class="table-responsive"> 
                         <table class="table">
-                          <!--<thead>
-                            <tr>
-                              <th>#</th>
-                              <th>First Name</th>
-                              <th>Last Name</th>
-                              <th>Username</th>
-                            </tr>
-                          </thead>-->
                           <tbody>
 
                             <tr>
@@ -65,7 +57,7 @@
                             </tr>
                             <tr>
                                 <td>Last block</td>
-                                <td>internal API</td>
+                                <td id="last-block">Loading...</td>
                               </tr>
 
                           </tbody>
@@ -85,19 +77,11 @@
 
                     <div class="table-responsive"> 
                         <table class="table">
-                          <!--<thead>
-                            <tr>
-                              <th>#</th>
-                              <th>First Name</th>
-                              <th>Last Name</th>
-                              <th>Username</th>
-                            </tr>
-                          </thead>-->
                           <tbody>
                             {{ for(var pool in it.stats.pools) { }}
                             <tr>
                                 <td>Current block effort: </td>
-                                <td>pool API</td>
+                                <td>Coming soon</td>
                             </tr>
                             <tr>
                                 <td>Workers: </td>
@@ -125,14 +109,6 @@
                     
                     <div class="table-responsive"> 
                         <table class="table">
-                          <!--<thead>
-                            <tr>
-                              <th>#</th>
-                              <th>First Name</th>
-                              <th>Last Name</th>
-                              <th>Username</th>
-                            </tr>
-                          </thead>-->
                           <tbody>
 
                             <tr>
@@ -156,10 +132,6 @@
                 </div>
             </div>
 
-            
-            
-        
-
                         <!-- <style>
                             .chartDiv {
                             height: 400px;
@@ -174,14 +146,6 @@
                     
                                 <div class="table-responsive"> 
                                     <table class="table">
-                                      <!--<thead>
-                                        <tr>
-                                          <th>#</th>
-                                          <th>First Name</th>
-                                          <th>Last Name</th>
-                                          <th>Username</th>
-                                        </tr>
-                                      </thead>-->
                                       <tbody>
             
                                         <tr>
@@ -215,7 +179,20 @@
                             <div class="block chart margin-bottom-sm">
                                 <div class="title"><strong>Blocks</strong></div>
                                 <div class="chart">
-                                    <p>paginated list of blocks mined</p>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Block</th>
+                                                <th>Date Mined</th>
+                                                <th>Status</th>
+                                                <th>Block Reward</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="block-table">
+                                            
+                                        </tbody>
+                                    </table>
+                                    <div id="pageination">Block data loading...</div>
                                 </div>
                             </div>
                         </div>
@@ -330,5 +307,113 @@
         .then((price) => {
             document.getElementById('ergoPrice').innerHTML = '$' + price;
         });
+
+
+
+
+    var blockRows = [];
+
+    async function getBlockInfo() {
+
+        let response = await fetch('http://tulipfarm.one:2127/payout/block/info');
+        
+        let blockInfo = await response.json();
+        let jsonBlockInfo = JSON.parse(blockInfo);
+
+        let blockInfoLength = Object.keys(jsonBlockInfo).length - 1;
+        
+        var blockDate; 
+        var blockReward;
+        var blockStatus;
+
+        Object.keys(jsonBlockInfo).forEach(blockNum => {
+            blockDate = new Date(jsonBlockInfo[blockNum].timestamp);
+            blockReward = jsonBlockInfo[blockNum].rewardAmount_sat / 1000000000;
+            blockStatus = jsonBlockInfo[blockNum].shareType;
+
+            if (blockStatus == 'round') {
+                blockStatus = 'Pending';
+            }
+            else {
+                blockStatus = 'Confirmed';
+            }
+            blockRows[blockInfoLength] = '<tr>\
+                <td>' + blockNum + '</td>\
+                <td>' + blockDate.toLocaleString('en-us')  + '</td>\
+                <td>' + blockStatus + '</td>\
+                <td>' + blockReward + '</td>\
+                </tr>';
+            blockInfoLength--;
+        });
+        
+        return blockRows;
+    }
+
+
+    var current_page = 1;
+    var records_per_page = 10;
+
+    getBlockInfo()
+        .then((blockRows) => {
+            var lastBlock = blockRows[0].split('<td>');
+            document.getElementById('last-block').innerHTML = lastBlock[1];
+                        
+            var htmlString = '<a href="javascript:prevPage()" id="btn_prev">Prev</a>\
+            <a href="javascript:nextPage()" id="btn_next">Next</a>\
+            page: <span id="page"></span>';
+            // for(var i = 0; i < blockRows.length; i++)
+            //   htmlString += blockRows[i];
+            document.getElementById('pageination').innerHTML = htmlString;
+            changePage(1);
+            return blockRows;
+        });
+
+    function changePage(page){
+            var btn_next = document.getElementById("btn_next");
+            var btn_prev = document.getElementById("btn_prev");
+            var listing_table = document.getElementById("block-table");
+            var page_span = document.getElementById("page");
+        
+            // Validate page
+            if (page < 1) page = 1;
+            if (page > numPages()) page = numPages();
+
+            listing_table.innerHTML = "";
+
+            for (var i = (page-1) * records_per_page; i < (page * records_per_page) && i < blockRows.length; i++) {
+                listing_table.innerHTML += blockRows[i];
+            }
+            page_span.innerHTML = page + "/" + numPages();
+
+            if (page == 1) {
+                btn_prev.style.visibility = "hidden";
+            } else {
+                btn_prev.style.visibility = "visible";
+            }
+
+            if (page == numPages()) {
+                btn_next.style.visibility = "hidden";
+            } else {
+                btn_next.style.visibility = "visible";
+            }
+        }
+
+    function numPages(){
+        return Math.ceil(blockRows.length / records_per_page);
+    }
+
+    function prevPage(){
+        if (current_page > 1) {
+            current_page--;
+            changePage(current_page);
+        }
+    }
+
+    function nextPage(){
+        if (current_page < numPages()) {
+            current_page++;
+            changePage(current_page);
+        }
+    }
 
 </script>
