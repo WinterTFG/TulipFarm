@@ -1,48 +1,9 @@
-<!--<div class="pure-g-r" id="boxesLower">
-
-    <div class="pure-u-1-2">
-        <div class="boxStats" id="boxStatsLeft">
-            <div class="boxLowerHeader">Global Stats</div>
-            <div class="boxStatsList">
-                {{ for(var algo in it.stats.algos) { }}
-                <div>
-                    <div><i class="fa fa-flask"></i>{{=algo}}</div>
-                    <div><i class="fa fa-users"></i><span id="statsMiners{{=algo}}">{{=it.stats.algos[algo].workers}}</span> Miners</div>
-                    <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=algo}}">{{=it.stats.algos[algo].hashrateString}}</span></div>
-                </div>
-                {{ } }}
-            </div>
-        </div>
-    </div>
-
-    <div class="pure-u-1-2">
-        <div class="boxStats" id="boxStatsRight">
-            <div class="boxLowerHeader">Pools / Coins</div>
-            <div class="boxStatsList">
-                {{ for(var pool in it.stats.pools) { }}
-                <div>
-                    <div><i class="fa fa-dot-circle-o"></i>{{=pool}}</div>
-                    <div><i class="fa fa-users"></i><span id="statsMiners{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span> Miners</div>
-                    <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></div>
-                </div>
-                {{ } }}
-            </div>
-        </div>
-    </div>
-
-</div>
--->
-
 <section class="no-padding-top no-padding-bottom">
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-
-
                     <div class="title"><strong>Pool Info</strong></div>
-
-
                     <div class="table-responsive"> 
                         <table class="table">
                           <tbody>
@@ -63,168 +24,130 @@
                           </tbody>
                         </table>
                       </div>
-
-
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-                    
-                    
                     <div class="title"><strong>Pool Stats</strong></div>
-
-
                     <div class="table-responsive"> 
                         <table class="table">
-                          <tbody>
-                            {{ for(var pool in it.stats.pools) { }}
-                            <tr>
-                                <td>Current block effort: </td>
-                                <td>Coming soon</td>
-                            </tr>
-                            <tr>
-                                <td>Workers: </td>
-                                <td><span id="statsMiners{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span></td>
-                            </tr>
-                            <tr>
-                                <td>Pool Hashrate: </td>
-                                <td><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></td>
-                              </tr>
-                              {{ } }}
-                          </tbody>
+                            <tbody>
+                                <tr>
+                                    <td>Current block effort: </td>
+                                    <td>Coming soon</td>
+                                </tr>
+                                <tr>
+                                    <td>Workers: </td>
+                                    <td><span id="statsMinersergo">0</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Pool Hashrate: </td>
+                                    <td><span id="statsHashrateergo">0.00 KH</span></td>
+                                </tr>
+                            </tbody>
                         </table>
-                      </div>
-
-
+                    </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-                    
-                    
                     <div class="title"><strong>Network Info</strong></div>
-
-                    
                     <div class="table-responsive"> 
                         <table class="table">
-                          <tbody>
-
-                            <tr>
-                                <td>Network Hashrate: </td>
-                                <td id="networkHashrate">Loading...</td>
-                            </tr>
-                            <tr>
-                                <td>Network Difficulty: </td>
-                                <td id="networkDiff">Loading...</td>
-                            </tr>
-                            <tr>
-                                <td>Ergo Price: </td>
-                                <td id="ergoPrice">Loading...</td>
-                              </tr>
-
-                          </tbody>
+                            <tbody>
+                                <tr>
+                                    <td>Network Hashrate: </td>
+                                    <td id="networkHashrate">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Network Difficulty: </td>
+                                    <td id="networkDiff">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Ergo Price: </td>
+                                    <td id="ergoPrice">Loading...</td>
+                                </tr>
+                            </tbody>
                         </table>
-                      </div>
-
-
+                    </div>
                 </div>
             </div>
 
-                        <!-- <style>
-                            .chartDiv {
-                            height: 400px;
-                            }
-                        </style> -->
+            <div class="col-lg-4 col-md-6">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>Blocks Mined</strong></div>
+                    <div class="table-responsive"> 
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <td>24 Hours: </td>
+                                <td id="last-24">Loading...</td>
+                            </tr>
+                            <tr>
+                                <td>7 Days: </td>
+                                <td id="last-7">Loading...</td>
+                            </tr>
+                            <tr>
+                                <td>30 Days: </td>
+                                <td id="last-30">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-12">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>Pool hashrate</strong></div>
+                    <div class="chart">
+                        <div class="chartDiv"><svg id="poolHashrate"></svg></div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-lg-12 col-md-12">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>Blocks</strong></div>
+                    <div class="chart">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Block</th>
+                                    <th>Date Mined</th>
+                                    <th>Status</th>
+                                    <th>Block Reward</th>
+                                </tr>
+                            </thead>
+                            <tbody id="block-table">
+                                
+                            </tbody>
+                        </table>
+                        <div id="pageination">Block data loading...</div>
+                    </div>
+                </div>
+            </div>
 
-                    
-                        <div class="col-lg-4 col-md-6">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Blocks Mined</strong></div>
-
-                    
-                                <div class="table-responsive"> 
-                                    <table class="table">
-                                      <tbody>
-            
-                                        <tr>
-                                            <td>24 Hours: </td>
-                                            <td>.</td>
-                                        </tr>
-                                        <tr>
-                                            <td>7 Days: </td>
-                                            <td>.</td>
-                                        </tr>
-                                        <tr>
-                                            <td>30 Days: </td>
-                                            <td>.</td>
-                                          </tr>
-            
-                                      </tbody>
-                                    </table>
-                                  </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-8 col-md-12">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Pool hashrate</strong></div>
-                                <div class="chart">
-                                    <div class="chartDiv"><svg id="poolHashrate"></svg></div>
-                                </div>
-                            </div>
-                        </div>
-                    
-                        <div class="col-lg-12 col-md-12">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Blocks</strong></div>
-                                <div class="chart">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Block</th>
-                                                <th>Date Mined</th>
-                                                <th>Status</th>
-                                                <th>Block Reward</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="block-table">
-                                            
-                                        </tbody>
-                                    </table>
-                                    <div id="pageination">Block data loading...</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-12 col-md-12">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Workers</strong></div>
-                                <div class="table-responsive">
-                                    {{ for(var pool in it.stats.pools) { }}
-                                            <table class="table">
-                                                <thead>
-                                                <tr>
-                                                    <th>Address</th>
-                                                    <th>Efficiency</th>
-                                                    <th>Hashrate</th>
-                                                </tr>
-                                                </thead>
-                                                {{ for(var worker in it.stats.pools[pool].workers) { }}
-                                                {{var workerstat = it.stats.pools[pool].workers[worker];}}
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{=worker}}</td>
-                                                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
-                                                        <td>{{=workerstat.hashrateString}}</td>
-                                                    </tr>
-                                                </tbody>
-                                                {{ } }}
-                                            </table>
-                                    {{ } }}
-                                </div>
-                            </div>
-                        </div>
+            <div class="col-lg-12 col-md-12">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>Workers</strong></div>
+                    <div class="table-responsive">
+                        
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Address</th>
+                                        <th>Efficiency</th>
+                                        <th>Hashrate</th>
+                                    </tr>
+                                    </thead>
+                                    
+                                </table>
+                        
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -311,7 +234,12 @@
 
 
 
-    var blockRows = [];
+    var blockRows = new Array();
+    blockRows[0] = new Array(); // getBlockInfo makes this a list of all blocks mined, newest first, with date and other data
+    blockRows[1] = new Array(); // blockRows[1] will contain integers for number of blocks mined in the past x hrs
+    blockRows[1][0] = 0;
+    blockRows[1][1] = 0;
+    blockRows[1][2] = 0;
 
     async function getBlockInfo() {
 
@@ -322,14 +250,28 @@
 
         let blockInfoLength = Object.keys(jsonBlockInfo).length - 1;
         
-        var blockDate; 
-        var blockReward;
-        var blockStatus;
+        // var blockDate; 
+        // var blockReward;
+        // var blockStatus;
+
+        const oneday = 60 * 60 * 24 * 1000;
+        let now = new Date();
 
         Object.keys(jsonBlockInfo).forEach(blockNum => {
-            blockDate = new Date(jsonBlockInfo[blockNum].timestamp);
-            blockReward = jsonBlockInfo[blockNum].rewardAmount_sat / 1000000000;
-            blockStatus = jsonBlockInfo[blockNum].shareType;
+            let blockDate = new Date(jsonBlockInfo[blockNum].timestamp);
+            let blockReward = jsonBlockInfo[blockNum].rewardAmount_sat / 1000000000;
+            let blockStatus = jsonBlockInfo[blockNum].shareType;
+
+            if ((now - blockDate) <= oneday) {
+                blockRows[1][0] += 1; // blocks mined in 24 hours
+            }
+            else if ((now - blockDate) <= (oneday * 7)) {
+                blockRows[1][1] += 1; // blocks mined last 7 days, less last 24 hours 
+            }
+            else if ((now - blockDate) <= (oneday * 30)) {
+                blockRows[1][2] += 1; // blocks mined last 30 days, less last 7 days
+                // be sure to add blockRows[1][1] and [1][0] to get last 30 days
+            }
 
             if (blockStatus == 'round') {
                 blockStatus = 'Pending';
@@ -337,7 +279,7 @@
             else {
                 blockStatus = 'Confirmed';
             }
-            blockRows[blockInfoLength] = '<tr>\
+            blockRows[0][blockInfoLength] = '<tr>\
                 <td>' + blockNum + '</td>\
                 <td>' + blockDate.toLocaleString('en-us')  + '</td>\
                 <td>' + blockStatus + '</td>\
@@ -355,14 +297,26 @@
 
     getBlockInfo()
         .then((blockRows) => {
-            var lastBlock = blockRows[0].split('<td>');
+            // Last block mined
+            var lastBlock = blockRows[0][0].split('<td>');
             document.getElementById('last-block').innerHTML = lastBlock[1];
+
+            // Number of blocks in last 24 hours
+            let lastDay = blockRows[1][0];
+            document.getElementById('last-24').innerHTML = lastDay;
+
+            // Number of blocks in last 7 days
+            let sevenDays = blockRows[1][1] + lastDay;
+            document.getElementById('last-7').innerHTML = sevenDays;
+
+            // Number of blocks in last 30 days
+            let thirtyDays = blockRows[1][2] + sevenDays;
+            document.getElementById('last-30').innerHTML = thirtyDays;      
                         
             var htmlString = '<a href="javascript:prevPage()" id="btn_prev">Prev</a>\
             <a href="javascript:nextPage()" id="btn_next">Next</a>\
             page: <span id="page"></span>';
-            // for(var i = 0; i < blockRows.length; i++)
-            //   htmlString += blockRows[i];
+
             document.getElementById('pageination').innerHTML = htmlString;
             changePage(1);
             return blockRows;
@@ -380,8 +334,8 @@
 
             listing_table.innerHTML = "";
 
-            for (var i = (page-1) * records_per_page; i < (page * records_per_page) && i < blockRows.length; i++) {
-                listing_table.innerHTML += blockRows[i];
+            for (var i = (page-1) * records_per_page; i < (page * records_per_page) && i < blockRows[0].length; i++) {
+                listing_table.innerHTML += blockRows[0][i];
             }
             page_span.innerHTML = page + "/" + numPages();
 
@@ -399,7 +353,7 @@
         }
 
     function numPages(){
-        return Math.ceil(blockRows.length / records_per_page);
+        return Math.ceil(blockRows[0].length / records_per_page);
     }
 
     function prevPage(){

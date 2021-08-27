@@ -3,204 +3,134 @@
         <div class="row">
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-
-
                     <div class="title"><strong>Worker Info</strong></div>
-
-
                     <div class="table-responsive"> 
                         <table class="table">
-                          <!--<thead>
-                            <tr>
-                              <th>#</th>
-                              <th>First Name</th>
-                              <th>Last Name</th>
-                              <th>Username</th>
-                            </tr>
-                          </thead>-->
-                          <tbody>
+                            <tbody>
+                                <tr>
+                                    <td>Hashrate: </td>
+                                    <td id="workerHash">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Effort: </td>
+                                    <td>Coming soon.</td>
+                                </tr>
+                                <tr>
+                                    <td>Min Payout: </td>
+                                    <td>1 erg</td>
+                                </tr>
 
-                            <tr>
-                                <td>Hashrate: </td>
-                                <td id="workerHash"></td>
-                            </tr>
-                            <tr>
-                                <td>Effort: </td>
-                                <td>worker API</td>
-                            </tr>
-                            <tr>
-                                <td>Participation</td>
-                                <td>worker API</td>
-                              </tr>
-
-                          </tbody>
+                            </tbody>
                         </table>
-                      </div>
-
-
+                    </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-                    
-                    
                     <div class="title"><strong>Payout</strong></div>
-
-
                     <div class="table-responsive"> 
                         <table class="table">
-                          <!--<thead>
-                            <tr>
-                              <th>#</th>
-                              <th>First Name</th>
-                              <th>Last Name</th>
-                              <th>Username</th>
-                            </tr>
-                          </thead>-->
-                          <tbody>
-                            
-                            <tr>
-                                <td>Balance: </td>
-                                <td>worker API</td>
-                            </tr>
-                            <tr>
-                                <td>Unverified: </td>
-                                <td>worker API</td>
-                            </tr>
-                            <tr>
-                                <td>Coin Price: </td>
-                                <td id="ergoPrice">Loading...</td>
-                              </tr>
-                              
-                          </tbody>
+                            <tbody>
+                                <tr>
+                                    <td>Balance: </td>
+                                    <td id="unpaid">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Unverified: </td>
+                                    <td id="unconfirmed">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Coin Price: </td>
+                                    <td id="ergoPrice">Loading...</td>
+                                </tr>
+                            </tbody>
                         </table>
-                      </div>
-
-
+                    </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-                    
-                    
-                    <div class="title"><strong>User dashboard</strong></div>
-
-                    
+                    <div class="title"><strong>User dashboard (coming soon)</strong></div>
                     <div class="table-responsive"> 
                         <table class="table">
-                          <!--<thead>
-                            <tr>
-                              <th>#</th>
-                              <th>First Name</th>
-                              <th>Last Name</th>
-                              <th>Username</th>
-                            </tr>
-                          </thead>-->
-                          <tbody>
-
-                            <tr>
-                                <td><a href="#">Change min payout</a></td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">Pause payouts</a></td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">Support dev</a></td>
-                              </tr>
-
-                          </tbody>
+                            <tbody>
+                                <tr>
+                                    <td><a href="#">Change min payout</a></td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#">Pause payouts</a></td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#">Support dev</a></td>
+                                </tr>
+                            </tbody>
                         </table>
-                      </div>
-
-
+                    </div>
                 </div>
             </div>
-
-            
-            
+                    
+            <div class="col-lg-4 col-md-6">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>History</strong></div>
+                    <div class="table-responsive"> 
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>60 min: </td>
+                                    <td id="time-60min">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>24 hr: </td>
+                                    <td id="time-24hr">Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>30 Days: </td>
+                                    <td id="time-30day">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-12">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>Worker hashrate</strong></div>
+                    <div class="chart">
+                        <div class="chartDiv"><svg id="poolHashrate"></svg></div>
+                    </div>
+                </div>
+            </div>
         
-
-                        <!-- <style>
-                            .chartDiv {
-                            height: 400px;
-                            }
-                        </style> -->
-
-                    
-                        <div class="col-lg-4 col-md-6">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>History</strong></div>
-
-                    
-                                <div class="table-responsive"> 
-                                    <table class="table">
-                                      <!--<thead>
+            <div class="col-lg-12 col-md-12">
+                <div class="block chart margin-bottom-sm">
+                    <div class="title"><strong>Worker data</strong></div>
+                    <div class="table-responsive">
+                        {{ for(var pool in it.stats.pools) { }}
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Address</th>
+                                        <th>Efficiency</th>
+                                        <th>Hashrate</th>
+                                    </tr>
+                                    </thead>
+                                    {{ for(var worker in it.stats.pools[pool].workers) { }}
+                                    {{var workerstat = it.stats.pools[pool].workers[worker];}}
+                                    <tbody>
                                         <tr>
-                                          <th>#</th>
-                                          <th>First Name</th>
-                                          <th>Last Name</th>
-                                          <th>Username</th>
+                                            <td>{{=worker}}</td>
+                                            <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
+                                            <td>{{=workerstat.hashrateString}}</td>
                                         </tr>
-                                      </thead>-->
-                                      <tbody>
-            
-                                        <tr>
-                                            <td>60 min: </td>
-                                            <td>worker API</td>
-                                        </tr>
-                                        <tr>
-                                            <td>24 hr: </td>
-                                            <td>worker API</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Month: </td>
-                                            <td>worker API</td>
-                                          </tr>
-            
-                                      </tbody>
-                                    </table>
-                                  </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-8 col-md-12">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Worker hashrate</strong></div>
-                                <div class="chart">
-                                    <div class="chartDiv"><svg id="poolHashrate"></svg></div>
-                                </div>
-                            </div>
-                        </div>
-                    
-                        <div class="col-lg-12 col-md-12">
-                            <div class="block chart margin-bottom-sm">
-                                <div class="title"><strong>Worker data</strong></div>
-                                <div class="table-responsive">
-                                    {{ for(var pool in it.stats.pools) { }}
-                                            <table class="table">
-                                                <thead>
-                                                <tr>
-                                                    <th>Address</th>
-                                                    <th>Efficiency</th>
-                                                    <th>Hashrate</th>
-                                                </tr>
-                                                </thead>
-                                                {{ for(var worker in it.stats.pools[pool].workers) { }}
-                                                {{var workerstat = it.stats.pools[pool].workers[worker];}}
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{=worker}}</td>
-                                                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
-                                                        <td>{{=workerstat.hashrateString}}</td>
-                                                    </tr>
-                                                </tbody>
-                                                {{ } }}
-                                            </table>
+                                    </tbody>
                                     {{ } }}
-                                </div>
-                            </div>
-                        </div>
+                                </table>
+                        {{ } }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -221,11 +151,6 @@
         });
     });
     document.querySelector('main').appendChild(document.createElement('script')).src = '/static/stats.js';
-
-
-
-
-
 
     // this function expects worker in form: address.rig (i.e. 1234567abcd890.rigname)
     async function getWorker(rig) {
@@ -263,17 +188,13 @@
     }
     
     var pathNameString = window.location.pathname;
-    console.log('pathNameString = ' + pathNameString)
+    // console.log('pathNameString = ' + pathNameString)
     var workerId = pathNameString.substr(9, pathNameString.length);
-    console.log('workerId = ' + workerId)
+    // console.log('workerId = ' + workerId);
 
-
-    
     // get worker info; requires async call since this is an API, so slow call may look blank
     getWorker(workerId)
         .then(workerHashrate => document.getElementById('workerHash').innerHTML = workerHashrate);
-
-
 
     async function getErgOracleData() {
         // coingecko free API allows 50 calls per minute
@@ -292,5 +213,63 @@
             document.getElementById('ergoPrice').innerHTML = '$' + price;
         });
 
+
+    async function workerEarned(rig, time, status) {
+        let urlString = 'http://tulipfarm.one:2127/payout/miner/earnings/' + rig + '?minute=' + time;
+
+        let response = await fetch(urlString);
+        let workerJson = await response.json();
+        let jsonParsed = JSON.parse(workerJson);
+
+        var numErg = 0;
+
+        if (status == null) {
+            for (w in jsonParsed) {
+                numErg += jsonParsed[w].ergs;
+            }
+        }
+        else if (status == 'unpaid') {
+            for (w in jsonParsed) {
+                if (jsonParsed[w].status.includes('unpaid')) {
+                    numErg = jsonParsed[w].ergs;
+                }
+            }
+        }
+        else if (status == 'unconfirmed') {
+            for (w in jsonParsed) {
+                if (jsonParsed[w].status.includes('unconfirmed')) {
+                    numErg = jsonParsed[w].ergs;
+                }
+            }
+        }
+        
+        return numErg;
+    }
+
+    workerEarned(workerId, 60, null)
+        .then((numErg) => {
+            document.getElementById('time-60min').innerHTML = numErg.toFixed(2);
+        });
+
+
+    workerEarned(workerId, 1440, null)
+        .then((numErg) => {
+            document.getElementById('time-24hr').innerHTML = numErg.toFixed(2);
+        });
+
+    workerEarned(workerId, 43200, null)
+        .then((numErg) => {
+            document.getElementById('time-30day').innerHTML = numErg.toFixed(2);
+        });
+
+    workerEarned(workerId, 525600, 'unpaid')
+        .then((numErg) => {
+            document.getElementById('unpaid').innerHTML = numErg.toFixed(2);
+        });
+
+    workerEarned(workerId, 525600, 'unconfirmed')
+        .then((numErg) => {
+            document.getElementById('unconfirmed').innerHTML = numErg.toFixed(2);
+        });
 
 </script>
