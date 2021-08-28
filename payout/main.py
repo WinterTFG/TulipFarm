@@ -12,6 +12,7 @@ from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine
+from typing import Optional
 
 app = FastAPI()
 
@@ -266,12 +267,14 @@ def GetMinerInfo(id):
 
 def GetMinerEarnings(id, minute):
     try:
+        if minute == None:
+            minute = 60*24
         df = pd.read_sql_query(f"""
 		    with tot as (
                     select distinct block, worker, "workerShares_erg"
 						, case 
-							when "_timestampPending" > current_timestamp - ({minute} * interval '1 minute') then 'pending'
-							else 'waiting'
+							when "_timestampPending" > current_timestamp - ({minute} * interval '1 minute') then 'paid'
+							else 'unpaid'
 						end as status
                     from payouts
                     where "_timestampWaiting" > current_timestamp - ({minute} * interval '1 minute')
@@ -368,7 +371,6 @@ def GetStatsBlocks(st, nd):
             nd = totalRows
         blocks = {}
         for k in red.keys():
-            logging.debug(k)
             m = re.search('^ergo:shares:(?P<stype>round|payout)(?P<round>\d+)$', k)
             if m:
                 blocks[m.group('round')] = {
@@ -380,7 +382,6 @@ def GetStatsBlocks(st, nd):
         for k, v in list(reversed(sorted(blocks.items())))[st-1:nd-1]:
             blockHeader = json.loads(requests.get(f'http://{nho}:{nod}/blocks/at/{k}', headers=hdr).content)[0]
             blockDetails = json.loads(requests.get(f'http://{nho}:{nod}/blocks/{blockHeader}', headers=hdr).content)
-            logging.debug(blockDetails)
             res['row'][k] = {
                 'dateMined': 0,
                 'status': 'Pending',
@@ -389,21 +390,30 @@ def GetStatsBlocks(st, nd):
             if 'blockTransactions' in blockDetails:
 
                 if 'transactions' in blockDetails['blockTransactions']:
-                    for x in blockDetails['blockTransactions']['transactions']:
 
-                        if 'outputs' in x:
-                            for o in x['outputs']:
+                    for trn in blockDetails['blockTransactions']['transactions']:
 
+                        if 'outputs' in trn:
+                            for o in trn['outputs']:
+                                # logging.debug(o) 
                                 # transaction details
-                                if o['transactionId'] == adr:
-                                    round = str(o['creationHeight'])
 
-                                    if round in blocks:
-                                        res['row'][k] = {
-                                            'dateMined': o['timestamp'],
-                                            'status': 'Confirmed',
-                                            'reward': float(o['value'])/1000000.0
-                                        }
+                                res['row'][k] = {
+                                    'dateMined': datetime.utcfromtimestamp(blockDetails['header']['timestamp']/1000).strftime("%Y/%m/%d %H:%M"),
+                                    'status': 'Confirmed',
+                                    'reward': float(o['value'])/1000000.0
+                                }
+
+                                if 'address' in o:
+                                    if o['address'] != adr:
+                                        round = str(o['creationHeight'])
+
+                                        if round in blocks:
+                                            res['row'][k] = {
+                                                'dateMined': blockDetails['header']['timestamp'],
+                                                'status': 'Confirmed',
+                                                'reward': float(o['value'])/1000000.0
+                                            }
                         
 
     except Exception as e:
@@ -449,8 +459,8 @@ async def MinerInfo(id):
     return GetMinerInfo(id)
 
 # miner earnings
-@app.get("/payout/miner/earnings/{id}/{minute}")
-async def MinerEarnings(id, minute):
+@app.get("/payout/miner/earnings/{id}")
+async def MinerEarnings(id, minute: Optional[int] = None):
     return GetMinerEarnings(id, minute)
 
 # all miner/rig combos
