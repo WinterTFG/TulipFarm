@@ -8,7 +8,8 @@ services:
     container_name: ergonode
   #  environment:
   #    - DEBUG=1
-    volumes: ['/var/ergo/mainnet.primary/.ergo:/var/ergo/.ergo']
+    volumes: 
+      - '/var/ergo/mainnet/.ergo:/var/ergo/.ergo'
     ports:
       - "9053:9053"
   #  deploy:
@@ -22,9 +23,11 @@ services:
       context: .
       dockerfile: Dockerfile.payout
     container_name: ergopayout
-    volumes: ['/var/ergo/payout:/var/ergo/payout']
+    volumes: 
+      - '/var/git/TulipFarm/payout:/app'
     ports:
       - "80:80"    
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80", "--reload-dir", "/app"]
 
   ergopool:
     build: 
@@ -48,5 +51,17 @@ services:
       - "6379:6379"
     # redis persistence
     volumes:
-      - /var/redis/data:/data
+      - /var/ergo/mainnet/redis:/data
     entrypoint: redis-server --appendonly yes
+
+  ergodb:
+    image: postgres:13-alpine
+    container_name: ergodb
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: winter
+      POSTGRES_PASSWORD: t00lip
+    volumnes:
+      /var/ergo/mainnet/postgres:/var/lib/postgresql/data
