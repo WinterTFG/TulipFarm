@@ -5,7 +5,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.node.testnet
-    container_name: ergonode
+    container_name: ergonode_testnet
   #  environment:
   #    - DEBUG=1
     volumes: 
@@ -20,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.payout
-    container_name: ergopayout
+    container_name: ergopayout_testnet
     volumes: 
       - '/var/git/TulipFarm/payout:/app'
     ports:
@@ -31,7 +31,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.pool.testnet
-    container_name: ergopool
+    container_name: ergopool_testnet
     volumes: 
       - '/var/git/TulipFarm/pool:/var/ergo'
     ports: 
@@ -44,7 +44,7 @@ services:
             
   ergoredis:
     image: redis
-    container_name: ergoredis
+    container_name: ergoredis_testnet
     ports:
       - "6379:6379"
     # redis persistence
@@ -54,7 +54,7 @@ services:
 
   ergodb:
     image: postgres:13-alpine
-    container_name: ergodb
+    container_name: ergodb_testnet
     restart: always
     ports:
       - "5432:5432"

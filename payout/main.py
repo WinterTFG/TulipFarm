@@ -43,16 +43,16 @@ app.add_middleware(
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 rho = 'ergoredis'
-rds = '6379'
+rds = '6379' # ?? env
 nho = 'ergonode'
-nod = '9052'
-fee = 0.007 # pool fee .7%
-rwd = 67.5 # current estimate, used for uncofirmed calc
+nod = '9053' # ?? make env
+fee = 0.007 # pool fee .7% ?? env
+rwd = 67.5 # current estimate, used for uncofirmed calc ?? find this from node api
 hdr = {'api_key': 'oncejournalstrangeweather'}
 tbl = 'payouts'
 #db = 'payouts.db'
 dbo = 'ergodb'
-dbp = '5432'
+dbp = '5432' # ?? env
 
 minPayout = 10 # ergs
 
