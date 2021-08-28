@@ -34,11 +34,11 @@
                             <tbody>
                                 <tr>
                                     <td>Balance: </td>
-                                    <td id="unpaid">Loading...</td>
+                                    <td id="balance">Loading...</td>
                                 </tr>
                                 <tr>
                                     <td>Unverified: </td>
-                                    <td id="unconfirmed">Loading...</td>
+                                    <td id="unverified">Loading...</td>
                                 </tr>
                                 <tr>
                                     <td>Coin Price: </td>
@@ -52,7 +52,7 @@
 
             <div class="col-lg-4 col-md-6">
                 <div class="block margin-bottom-sm">
-                    <div class="title"><strong>User dashboard (coming soon)</strong></div>
+                    <div class="title"><strong>User dashboard</strong></div>
                     <div class="table-responsive"> 
                         <table class="table">
                             <tbody>
@@ -86,7 +86,7 @@
                                     <td id="time-24hr">Loading...</td>
                                 </tr>
                                 <tr>
-                                    <td>30 Days: </td>
+                                    <td>Month: </td>
                                     <td id="time-30day">Loading...</td>
                                 </tr>
                             </tbody>
@@ -214,7 +214,7 @@
         });
 
 
-    async function workerEarned(rig, time, status) {
+    async function workerEarned(rig, time) {
         let urlString = 'http://tulipfarm.one:2127/payout/miner/earnings/' + rig + '?minute=' + time;
 
         let response = await fetch(urlString);
@@ -223,53 +223,30 @@
 
         var numErg = 0;
 
-        if (status == null) {
-            for (w in jsonParsed) {
-                numErg += jsonParsed[w].ergs;
+        for (w in jsonParsed) {
+            console.log(jsonParsed[w].ergs);
+            numErg += jsonParsed[w].ergs;
             }
-        }
-        else if (status == 'unpaid') {
-            for (w in jsonParsed) {
-                if (jsonParsed[w].status.includes('unpaid')) {
-                    numErg = jsonParsed[w].ergs;
-                }
-            }
-        }
-        else if (status == 'unconfirmed') {
-            for (w in jsonParsed) {
-                if (jsonParsed[w].status.includes('unconfirmed')) {
-                    numErg = jsonParsed[w].ergs;
-                }
-            }
-        }
         
         return numErg;
+
     }
 
-    workerEarned(workerId, 60, null)
+    workerEarned(workerId, 60)
         .then((numErg) => {
-            document.getElementById('time-60min').innerHTML = numErg.toFixed(2);
+            document.getElementById('time-60min').innerHTML = numErg;
         });
 
 
-    workerEarned(workerId, 1440, null)
+    workerEarned(workerId, 1440)
         .then((numErg) => {
-            document.getElementById('time-24hr').innerHTML = numErg.toFixed(2);
+            document.getElementById('time-24hr').innerHTML = numErg;
         });
 
-    workerEarned(workerId, 43200, null)
+    workerEarned(workerId, 43200)
         .then((numErg) => {
-            document.getElementById('time-30day').innerHTML = numErg.toFixed(2);
+            document.getElementById('time-30day').innerHTML = numErg;
         });
 
-    workerEarned(workerId, 525600, 'unpaid')
-        .then((numErg) => {
-            document.getElementById('unpaid').innerHTML = numErg.toFixed(2);
-        });
-
-    workerEarned(workerId, 525600, 'unconfirmed')
-        .then((numErg) => {
-            document.getElementById('unconfirmed').innerHTML = numErg.toFixed(2);
-        });
 
 </script>

@@ -4,12 +4,12 @@ services:
   ergonode:
     build: 
       context: .
-      dockerfile: Dockerfile.node.testnet.dev
+      dockerfile: Dockerfile.node.testnet
     container_name: ergonode
   #  environment:
   #    - DEBUG=1
     volumes: 
-      - '/var/ergo/testnet.primary/.ergo:/var/ergo/.ergo'
+      - '/var/ergo/testnet/.ergo:/var/ergo/.ergo'
     ports:
       - "9053:9052" # rempap for config files
     depends_on:
@@ -21,7 +21,8 @@ services:
       context: .
       dockerfile: Dockerfile.payout
     container_name: ergopayout
-    volumes: ['/var/git/TulipFarm/payout:/app']
+    volumes: 
+      - '/var/git/TulipFarm/payout:/app'
     ports:
       - "80:80"    
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--debug", "--port", "80", "--reload-dir", "/app"]
@@ -29,7 +30,7 @@ services:
   ergopool:
     build: 
       context: .
-      dockerfile: Dockerfile.pool.dev
+      dockerfile: Dockerfile.pool.testnet
     container_name: ergopool
     volumes: 
       - '/var/git/TulipFarm/pool:/var/ergo'
@@ -48,6 +49,17 @@ services:
       - "6379:6379"
     # redis persistence
     volumes:
-      - /var/redis/testnet:/data
+      - /var/ergo/testnet/redis:/data
     entrypoint: redis-server --appendonly yes
 
+  ergodb:
+    image: postgres:13-alpine
+    container_name: ergodb
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: winter
+      POSTGRES_PASSWORD: t00lip
+    volumes:
+      - /var/ergo/testnet/postgres:/var/lib/postgresql/data
