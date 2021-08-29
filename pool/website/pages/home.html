@@ -134,6 +134,7 @@
                     <div class="title"><strong>Workers</strong></div>
                     <div class="table-responsive">
                         
+                        {{ for(var pool in it.stats.pools) { }}
                                 <table class="table">
                                     <thead>
                                     <tr>
@@ -142,8 +143,18 @@
                                         <th>Hashrate</th>
                                     </tr>
                                     </thead>
-                                    
+                                    {{ for(var worker in it.stats.pools[pool].workers) { }}
+                                    {{var workerstat = it.stats.pools[pool].workers[worker];}}
+                                    <tbody>
+                                        <tr>
+                                            <td>{{=worker}}</td>
+                                            <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
+                                            <td>{{=workerstat.hashrateString}}</td>
+                                        </tr>
+                                    </tbody>
+                                    {{ } }}
                                 </table>
+                        {{ } }}
                         
                     </div>
                 </div>
