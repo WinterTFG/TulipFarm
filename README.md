@@ -24,4 +24,5 @@ Start on TESTNET
 > - Website: How-To Page -- Auto-generate config files for popular mining software (NBMiner, T-Rex, TeamRedMiner, lolminer)
 > - Website: Worker page -- Only show list of workers searched for, not all workers
 > - Website: Add clean error handling for search, undisplayed data, and loading visual
+> - Separate website from legacy NOMP functionality to allow it to be hosted separately
 
