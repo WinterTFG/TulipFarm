@@ -268,36 +268,46 @@
         const oneday = 60 * 60 * 24 * 1000;
         let now = new Date();
 
-        Object.keys(jsonBlockInfo).forEach(blockNum => {
-            let blockDate = new Date(jsonBlockInfo[blockNum].timestamp);
-            let blockReward = jsonBlockInfo[blockNum].rewardAmount_sat / 1000000000;
-            let blockStatus = jsonBlockInfo[blockNum].shareType;
-
-            if ((now - blockDate) <= oneday) {
-                blockRows[1][0] += 1; // blocks mined in 24 hours
-            }
-            else if ((now - blockDate) <= (oneday * 7)) {
-                blockRows[1][1] += 1; // blocks mined last 7 days, less last 24 hours 
-            }
-            else if ((now - blockDate) <= (oneday * 30)) {
-                blockRows[1][2] += 1; // blocks mined last 30 days, less last 7 days
-                // be sure to add blockRows[1][1] and [1][0] to get last 30 days
-            }
-
-            if (blockStatus == 'round') {
-                blockStatus = 'Pending';
-            }
-            else {
-                blockStatus = 'Confirmed';
-            }
-            blockRows[0][blockInfoLength] = '<tr>\
-                <td>' + blockNum + '</td>\
-                <td>' + blockDate.toLocaleString('en-us')  + '</td>\
-                <td>' + blockStatus + '</td>\
-                <td>' + blockReward + '</td>\
+        if (Object.keys(jsonBlockInfo).length === 0) {
+            blockRows[0][0] = '<tr>\
+                <td>None yet</td>\
+                <td></td>\
+                <td></td>\
+                <td></td>\
                 </tr>';
-            blockInfoLength--;
-        });
+        }
+        else {
+            Object.keys(jsonBlockInfo).forEach(blockNum => {
+                let blockDate = new Date(jsonBlockInfo[blockNum].timestamp);
+                let blockReward = jsonBlockInfo[blockNum].rewardAmount_sat / 1000000000;
+                let blockStatus = jsonBlockInfo[blockNum].shareType;
+
+                if ((now - blockDate) <= oneday) {
+                    blockRows[1][0] += 1; // blocks mined in 24 hours
+                }
+                else if ((now - blockDate) <= (oneday * 7)) {
+                    blockRows[1][1] += 1; // blocks mined last 7 days, less last 24 hours 
+                }
+                else if ((now - blockDate) <= (oneday * 30)) {
+                    blockRows[1][2] += 1; // blocks mined last 30 days, less last 7 days
+                    // be sure to add blockRows[1][1] and [1][0] to get last 30 days
+                }
+
+                if (blockStatus == 'round') {
+                    blockStatus = 'Pending';
+                }
+                else {
+                    blockStatus = 'Confirmed';
+                }
+                blockRows[0][blockInfoLength] = '<tr>\
+                    <td>' + blockNum + '</td>\
+                    <td>' + blockDate.toLocaleString('en-us')  + '</td>\
+                    <td>' + blockStatus + '</td>\
+                    <td>' + blockReward + '</td>\
+                    </tr>';
+                blockInfoLength--;
+            });
+        }
         
         return blockRows;
     }
