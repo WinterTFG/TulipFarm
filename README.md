@@ -21,7 +21,7 @@ Start on TESTNET
 > - Website: Search by worker name, not just Erg address
 > - Website: Better responsive tables for mobile, and obfuscicate worker addresses
 > - Website: Add block effort calculations for home page and worker page
-> - Website: Auto-generate config files for popular mining software (NBMiner, T-Rex, TeamRedMiner, lolminer)
+> - Website: How-To Page -- Auto-generate config files for popular mining software (NBMiner, T-Rex, TeamRedMiner, lolminer)
 > - Website: Worker page only show list of workers searched for, not all workers
 > - Website: Add clean error handling for search, undisplayed data, and loading visual
 
