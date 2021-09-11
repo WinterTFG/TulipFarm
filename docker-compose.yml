@@ -10,7 +10,8 @@ services:
       - '/var/ergo/mainnet/.ergo:/var/ergo/.ergo'
     ports:
       - '9053:9052' # rempap for config files
-    depends_on: ergoredis
+    depends_on: 
+      - ergoredis
     working_dir: /var/ergo
     entrypoint: java -jar ergo-4.0.13.jar --mainnet -c ergo.conf
 
@@ -23,7 +24,8 @@ services:
       - './stratum:/var/ergo'
     ports: 
       - "8008:8008" # stratum
-    depends_on: ergonode
+    depends_on: 
+      - ergonode
     # entrypoint: nodemon ./start.js -e js # restart on js file changes
 
   ergotulip:
@@ -36,7 +38,8 @@ services:
     ports: 
       - '8000:8000'
     # entrypoint: uvicorn main:app --host 0.0.0.0 --debug --port 8000 --reload-dir /app
-    depends_on: ergonode
+    depends_on: 
+      - ergonode
 
   ergoredis:
     image: redis

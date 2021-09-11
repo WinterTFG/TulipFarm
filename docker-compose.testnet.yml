@@ -10,7 +10,8 @@ services:
       - '/var/ergo/testnet/.ergo:/var/ergo/.ergo'
     ports:
       - '9053:9052' # rempap for config files
-    depends_on: ergoredis
+    depends_on: 
+      - ergoredis
     working_dir: /var/ergo
     entrypoint: java -jar ergo-4.0.13.jar --testnet -c testnet.conf
 
@@ -23,8 +24,9 @@ services:
       - './stratum:/var/ergo'
     ports: 
       - "8008:8008" # stratum
-    depends_on: ergonode
-    entrypoint: nodemon ./start.js -e js # restart on js file changes
+    depends_on: 
+      - ergonode
+    entrypoint: nodemon ./tulip.js -e js # restart on js file changes
 
   ergotulip:
     container_name: ergotulip
@@ -35,8 +37,9 @@ services:
       - './tulip:/app'
     ports: 
       - '8000:8000'
+    depends_on: 
+      - ergonode
     entrypoint: uvicorn main:app --host 0.0.0.0 --debug --port 8000 --reload-dir /app
-    depends_on: ergonode
 
   ergoredis:
     image: redis

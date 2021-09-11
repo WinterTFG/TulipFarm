@@ -3,7 +3,7 @@ FROM node:12
 # ENV DEBUG true
 
 RUN mkdir /var/ergo
-COPY ./pool /var/ergo
+COPY ./stratum /var/ergo
 WORKDIR /var/ergo
 RUN DEBIAN_FRONTEND='noninteractive' apt-get update
 RUN DEBIAN_FRONTEND='noninteractive' apt-get upgrade -y

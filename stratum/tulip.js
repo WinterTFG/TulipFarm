@@ -121,7 +121,7 @@ pool.on('share', function(isValidShare, isValidBlock, data) {
         console.error(error);
     }    
     
-    console.log(msg+'::'+JSON.stringify(data));
+    console.log('::'+JSON.stringify(data));
 });
 
 // logging

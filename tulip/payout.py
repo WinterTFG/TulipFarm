@@ -3,43 +3,17 @@ import re
 import requests
 import json
 import logging
-import sqlite3
 import pandas as pd
 import uuid
-import time
 
 from datetime import datetime
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine
-from typing import Optional
-
-app = FastAPI()
-
-origins = [
-    "http://www.tulipfarm.one",
-    "http://tulipfarm.one",
-    "http://www.tulipfarm.one:2127",
-    "http://tulipfarm.one:2127",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# from sqlalchemy import create_engine
+# from typing import Optional
 
 ###
 ### INIT
 ###
-### CRITICAL 50
-### ERROR 40
-### WARNING 30
-### INFO 20
-### DEBUG 10
-### NOTSET 0
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 rho = 'ergoredis'
@@ -56,7 +30,7 @@ dbp = '5432' # ?? env
 
 minPayout = 10 # ergs
 
-con = create_engine(f'postgresql://winter:t00lip@{dbo}:{dbp}/winter')
+# con = create_engine(f'postgresql://winter:t00lip@{dbo}:{dbp}/winter')
 red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
 adr = json.loads(requests.get(f'http://{nho}:{nod}/mining/rewardAddress').content)['rewardAddress']
 
@@ -328,35 +302,6 @@ def ArchivePayments():
     logging.debug('paid')
 
 
-def initPayouts():
-    with con.connect() as sql:
-        sql.execute("drop table payouts")
-
-    with con.connect() as sql:
-        sql.execute("""
-            create table if not exists payouts (
-                id integer not null primary key autoincrement,
-                block text,
-                miner text,
-                worker text,
-                rig text,
-                status text,
-                workerShares integer,
-                workerShares_erg integer,
-                blockReward_sat integer,
-                poolFee_pct real,
-                totalBlockShares integer,
-                totalAmountAfterFee_sat integer,
-                pendingBatchId text,
-                payoutBatchAmount_erg real,
-                paidTransactionId text,
-                _timestampWaiting datetime,
-                _timestampPending datetime,
-                _timestampPaid datetime
-            )
-        """)
-
-
 def GetStatsBlocks(st, nd):
     res = {
         'row': {},
@@ -421,65 +366,3 @@ def GetStatsBlocks(st, nd):
 
     return json.dumps(res)
 
-###
-### ROUTES
-###
-@app.get("/")
-def go_home():
-    return {"Tulip": "Farm"}
-
-# check redis for any new blocks that pool has mined
-@app.get("/payout/block/info")
-async def BlockInfo():
-    return GetBlockInfo(False)
-
-# check redis for any new blocks that pool has mined
-@app.get("/payout/block/miner")
-async def BlockMiner():
-    return GetBlockInfo(True)
-
-# new -> waiting
-@app.get("/payout/block/process")
-async def BlockProcess():
-    return ProcessBlocks()
-
-# archive old blocks already paid
-@app.get("/payout/block/archive/{id}")
-async def Archive(id):
-    return {"archive": f"below height: {id}"}
-
-# pay miners
-@app.get("/payout/miner/process")
-async def MinerProcess():
-    return ProcessPayouts()
-
-# miner info
-@app.get("/payout/miner/{id}")
-async def MinerInfo(id):
-    return GetMinerInfo(id)
-
-# miner earnings
-@app.get("/payout/miner/earnings/{id}")
-async def MinerEarnings(id, minute: Optional[int] = None):
-    return GetMinerEarnings(id, minute)
-
-# all miner/rig combos
-@app.get("/payout/miners")
-async def Miners():
-    return GetMiners()
-
-# archive old blocks already paid
-@app.get("/payout/miner/verify")
-async def MinerVerify():
-    return {"miner": "verify"}
-
-# site last blocks
-@app.get("/stats/blocks/{startRow}/{endRow}")
-async def StatsBlocks(startRow, endRow):
-    return GetStatsBlocks(startRow, endRow)
-
-###
-### MAIN
-###
-#if __name__ == "__main__":
-    #getBlockInfo()
