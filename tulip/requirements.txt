@@ -2,3 +2,7 @@ redis
 uvicorn
 fastapi
 # arq
+# requests
+# pandas
+# sqlalchemy
+# psycopg2
