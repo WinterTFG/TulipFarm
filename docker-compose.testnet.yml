@@ -1,71 +1,48 @@
-version: "3.3"
+version: '3'
 
 services:
+
   ergonode:
-    build: 
-      context: .
-      dockerfile: Dockerfile.node.testnet
+    image: openjdk
     container_name: ergonode_testnet
-  #  environment:
-  #    - DEBUG=1
     volumes: 
+      - './node/:/var/ergo'
       - '/var/ergo/testnet/.ergo:/var/ergo/.ergo'
     ports:
-      - "9053:9052" # rempap for config files
-    healthcheck:
-      test: curl -f http://localhost:9053/info | jq 'if .headersHeight == .fullHeight then 0 else 1 end'
-      interval: 30s
-      timeout: 3s      
-    depends_on:
-      - ergoredis
-    # command: ["java", "-jar", "ergo.jar", "--testnet", "-c", "ergo.conf"]
+      - '9053:9052' # rempap for config files
+    depends_on: ergoredis
+    working_dir: /var/ergo
+    entrypoint: java -jar ergo-4.0.13.jar --testnet -c testnet.conf
 
-  ergopayout:
-    build:
-      context: .
-      dockerfile: Dockerfile.payout
-    container_name: ergopayout_testnet
-    volumes: 
-      - '/var/git/TulipFarm/payout:/app'
-    ports:
-      - "80:80"    
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--debug", "--port", "80", "--reload-dir", "/app"]
-
-  ergopool:
+  ergostratum:
+    container_name: ergostratum
     build: 
       context: .
-      dockerfile: Dockerfile.pool.testnet
-    container_name: ergopool_testnet
+      dockerfile: Dockerfile.stratum
     volumes: 
-      # - '/var/git/TulipFarm/pool:/var/ergo'
-      - 'c:/git/TulipFarm/pool:/var/ergo'
+      - './stratum:/var/ergo'
     ports: 
-      - "3032:3032" # 
       - "8008:8008" # stratum
-      - "2127:2127" # website
-    # tail -f /dev/null 
-    entrypoint: nodemon -e html,css,js ./init.js
-    depends_on:
-      - ergonode
-            
+    depends_on: ergonode
+    entrypoint: nodemon ./start.js -e js # restart on js file changes
+
+  ergotulip:
+    container_name: ergotulip
+    build: 
+      context: .
+      dockerfile: Dockerfile.tulip
+    volumes: 
+      - './tulip:/app'
+    ports: 
+      - '8000:8000'
+    entrypoint: uvicorn main:app --host 0.0.0.0 --debug --port 8000 --reload-dir /app
+    depends_on: ergonode
+
   ergoredis:
     image: redis
-    container_name: ergoredis_testnet
-    ports:
-      - "6379:6379"
-    # redis persistence
+    container_name: ergoredis_testnet    
     volumes:
-      - /var/ergo/testnet/redis:/data
+      - /var/ergo/testnet/redis:/data # redis persistence
+    ports:
+      - '6379:6379'
     entrypoint: redis-server --appendonly yes
-
-  ergodb:
-    image: postgres:13-alpine
-    container_name: ergodb_testnet
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: winter
-      POSTGRES_PASSWORD: t00lip
-    volumes:
-      - /var/ergo/testnet/postgres:/var/lib/postgresql/data
