@@ -1,0 +1,72 @@
+{
+    "enabled": true,
+    "coin": "ergo.json",
+
+    // Address to where block rewards are given
+    // "address": "9fEvBZmUBZsfxxXL3DH6uxdtB9WEM7gxegU6kzb7hbBGbkzLfo5", // mainnet
+    "address": "3WwjaerfwDqYvFwvPRVJBJx2iUvCjD2jVpsL82Zho1aaV5R95jsG",
+
+    "rewardRecipients": {
+        // % to this address (i.e. 0.1 for 1%)
+        // "9fEvBZmUBZsfxxXL3DH6uxdtB9WEM7gxegU6kzb7hbBGbkzLfo5": 1.0 // mainnet
+        "3WwjaerfwDqYvFwvPRVJBJx2iUvCjD2jVpsL82Zho1aaV5R95jsG": 1.0
+    },
+
+    "paymentProcessing": {
+        "enabled": false,
+        "paymentInterval": 10, // seconds to check
+        "minimumPayment": 10, // min coins to send payout
+        "daemon": {
+            "host": "ergonode",
+            "port": 9052,
+            "user": "ergo",
+            "password": "ergo"
+        }
+    },
+
+    "ports": {
+        "8009": {
+            "diff": 3999000000
+        },
+
+        "8008": {
+            "diff": 3888000000,
+            "multiplyDifficulty": true,
+            "varDiff": {
+                "minDiff":   1000000000,
+                "maxDiff": 100000000000,
+                "targetTime": 15,
+                "retargetTime": 10,
+                "variancePercent": 30
+            }
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "ergonode",
+            "port": 9052,
+            "user": "ergo",
+            "password": "ergo"
+        }
+    ],
+
+    "p2p": {
+        "enabled": false,
+        "host": "ergonode",
+        "port": 9052,
+        "disableTransactions": true
+    },
+
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "ergouser",
+        "password": "ergopass",
+        "database": "ergodb",
+        "checkPassword": true,
+        "autoCreateWorker": false
+    }
+
+}

@@ -1,0 +1,58 @@
+{
+    "name": "ergo-nomp",
+    "version": "0.0.4",
+    "description": "Tulip Farm Pool",
+    "keywords": [
+        "stratum",
+        "mining",
+        "pool",
+        "server",
+        "poolserver",
+        "defi",
+        "ergo"
+    ],
+    "homepage": "https://github.com/WinterTFG/stratum-pool",
+    "bugs": {
+        "url": "https://github.com/WinterTFG/stratum-pool/issues"
+    },
+    "license": "GPL-2.0",
+    "author": "Matthew Little",
+    "contributors": [
+        "vekexasia",
+        "TheSeven",
+        "WinterTFG"
+    ],
+    "main": "init.js",
+    "bin": {
+        "block-notify": "./scripts/blockNotify.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/WinterTFG/stratum-pool.git"
+    },
+    "dependencies": {
+        "async": "1.5.2",
+        "bignum": "0.13.1",
+        "body-parser": "*",
+        "colors": "*",
+        "compression": "*",
+        "dateformat": "^4.5.1",
+        "dot": "*",
+        "express": "*",
+        "extend": "*",
+        "libxmljs": "^0.19.7",
+        "mysql": "*",
+        "node-gyp": "^8.2.0",
+        "node-json-minify": "*",
+        "node-watch": "0.5.9",
+        "nonce": "*",
+        "pg": "^8.7.1",
+        "redis": "^3.1.2",
+        "request": "^2.88.2",
+        "stratum-pool": "git+https://github.com/mhssamadani/ErgoStratumServer.git",
+        "tar": ">=4.4.18"
+    },
+    "engines": {
+        "node": ">=0.10"
+    }
+}
