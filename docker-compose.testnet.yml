@@ -12,6 +12,10 @@ services:
       - '/var/ergo/testnet/.ergo:/var/ergo/.ergo'
     ports:
       - "9053:9052" # rempap for config files
+    healthcheck:
+      test: curl -f http://localhost:9053/info | jq 'if .headersHeight == .fullHeight then 0 else 1 end'
+      interval: 30s
+      timeout: 3s      
     depends_on:
       - ergoredis
     # command: ["java", "-jar", "ergo.jar", "--testnet", "-c", "ergo.conf"]
@@ -33,12 +37,14 @@ services:
       dockerfile: Dockerfile.pool.testnet
     container_name: ergopool_testnet
     volumes: 
-      - '/var/git/TulipFarm/pool:/var/ergo'
+      # - '/var/git/TulipFarm/pool:/var/ergo'
+      - 'c:/git/TulipFarm/pool:/var/ergo'
     ports: 
       - "3032:3032" # 
       - "8008:8008" # stratum
       - "2127:2127" # website
-    entrypoint: nodemon -e html,css,js init.js
+    # tail -f /dev/null 
+    entrypoint: nodemon -e html,css,js ./init.js
     depends_on:
       - ergonode
             
