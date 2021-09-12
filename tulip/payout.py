@@ -8,26 +8,18 @@ import uuid
 
 from datetime import datetime
 from fastapi import FastAPI
-# from sqlalchemy import create_engine
-# from typing import Optional
 
 ###
 ### INIT
 ###
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
-rho = 'ergoredis'
+rho = 'ergoredis_testnet'
 rds = '6379' # ?? env
-nho = 'ergonode'
-nod = '9053' # ?? make env
+nho = 'ergonode_testnet'
+nod = '9052' # ?? make env
 fee = 0.007 # pool fee .7% ?? env
-rwd = 67.5 # current estimate, used for uncofirmed calc ?? find this from node api
 hdr = {'api_key': 'oncejournalstrangeweather'}
-tbl = 'payouts'
-#db = 'payouts.db'
-dbo = 'ergodb'
-dbp = '5432' # ?? env
-
 minPayout = 10 # ergs
 
 # con = create_engine(f'postgresql://winter:t00lip@{dbo}:{dbp}/winter')
@@ -37,6 +29,21 @@ adr = json.loads(requests.get(f'http://{nho}:{nod}/mining/rewardAddress').conten
 ###
 ### FUNCTIONS
 ###
+# from mhs_sam
+def MinersRewardAtHeight(h):
+    fixedRatePeriod       = 525600
+    fixedRate             = 75000000000 # satoshis
+    epochLength           = 64800 
+    foundersInitialReward = 7500000000 # satoshis
+    oneEpochReduction     = 3000000000 # satoshis
+
+    if h < fixedRatePeriod + (2 * epochLength):
+        return fixedRate - foundersInitialReward
+    else:
+        epoch = int(1 + (h - fixedRatePeriod) / epochLength)
+        return int(max(fixedRate - oneEpochReduction * epoch, 0))
+
+
 def GetBlockInfo(showMinerInfo=False):
 
     # red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)
@@ -161,12 +168,6 @@ def ProcessBlocks():
                     rows.append([block, miner, miners[block][miner]['worker'], miners[block][miner]['rig'], 'waiting', miners[block][miner]['shares'], workerShares_erg, blocks[block]['rewardAmount_sat'], fee, blocks[block]['totalShares'], totalAmountAfterFee_sat, '', 0.0, '', datetime.now().isoformat(), None, None])
                     rounds[block] = 0 # get distinct list; rather than append to list
         
-        # add new shares to waiting status
-        df = pd.DataFrame(rows, columns=['block', 'miner', 'worker', 'rig', 'status', 'workerShares', 'workerShares_erg', 'blockReward_sat', 'poolFee_pct', 'totalBlockShares', 'totalAmountAfterFee_sat', 'pendingBatchId', 'payoutBatchAmount_erg', 'paidTransactionId', '_timestampWaiting', '_timestampPending', '_timestampPaid'])
-        if len(df) > 0:
-            logging.info(f'saving {len(df)} new shares to database...')
-            df.to_sql('payouts', if_exists='append', con=con, index=False)
-        
         # update rounds so that are not counted again
         for round in rounds:
             logging.info(f'renaming redis key, ergo:shares:round{round}...')
@@ -177,129 +178,55 @@ def ProcessBlocks():
 
     return json.dumps(rows)
 
-
 def ProcessPayouts():
-    payments = []
-
-    try:
-        df = pd.read_sql_query("select * from payouts where status = 'waiting'", con=con)
-        dfTotals = df.groupby(['worker'])['workerShares_erg'].sum().reset_index()
-        dfPending = dfTotals[dfTotals['workerShares_erg'] >= minPayout]
-
-        for r in dfPending.itertuples():
-            logging.info(f'pay {r.workerShares_erg:.2f} ergs to worker, {r.worker}...')
-
-            batch = str(uuid.uuid4())
-            logging.debug(f'log payment info for {r.worker}, batch: {batch}')
-            bdy = [{'address': r.worker, 'value': int(float(r.workerShares_erg)*1000000), 'assets': []}]
-            logging.debug(f'{type(bdy)}; {bdy}')
-            res = requests.post(f'http://{nho}:{nod}/wallet/payment/send', headers=hdr, json=bdy)
-            if res.status_code == 200:
-                logging.info(f'Payment sent: {json.loads(res.content)}')
-                tid = res.json()
-                payments.append({
-                    'batch': batch,
-                    'payoutBatchAmount_ergs': r.workerShares_erg,
-                    'transactionId': tid,
-                    'worker': r.worker,
-                    'timestamp': datetime.now().isoformat(),
-                    'status': 'pending'
-                })
-                with con.connect() as sql:
-                    sql.execute(f"""
-                        update {tbl} 
-                        set "pendingBatchId" = '{batch}'
-                            , "payoutBatchAmount_erg" = {r.workerShares_erg}
-                            , "_timestampPending" = '{datetime.now().isoformat()}'
-                            , "paidTransactionId" = '{json.loads(res.content)}'
-                            , "status" = 'pending'
-                        where worker = '{r.worker}'
-                            and "status" = 'waiting'
-                        """)
-            else:
-                logging.error(f'Payment not sent: STATUS CODE={res.status_code}::{res.json()}')
-
-    except Exception as e:
-        logging.error(f'handlePayouts::{e}')
-
-    return json.dumps(payments)
-
-
-def VerifyPayments():
-    logging.debug('paid')
-
-
-def GetMinerInfo(id):
-    try:
-        df = pd.read_sql_query(f"select * from payouts where worker = '{id}'", con=con)        
-
-    except Exception as e:
-        logging.error(e)
-
-    return df.to_json(orient='records')
-
-
-def GetMinerEarnings(id, minute):
-    try:
-        if minute == None:
-            minute = 60*24
-        df = pd.read_sql_query(f"""
-		    with tot as (
-                    select distinct block, worker, "workerShares_erg"
-						, case 
-							when "_timestampPending" > current_timestamp - ({minute} * interval '1 minute') then 'paid'
-							else 'unpaid'
-						end as status
-                    from payouts
-                    where "_timestampWaiting" > current_timestamp - ({minute} * interval '1 minute')
-            )
-            select "worker", "status", sum("workerShares_erg") as ergs
-            from tot
-            where worker = '{id}'
-			group by "worker", "status"
-            """, con=con)
-
-        tot = 0
-        shr = 0
-        blk = 0
-        for k in red.keys():             
-            # only unconfirmed
-            m = re.search('^ergo:shares:(?P<stype>round)(?P<round>\d+)$', k)
-            if m:
-                round = m.group('round')
-                shares = red.hgetall(f'ergo:shares:round{round}')
-                for s in shares:
-                    share = int(shares[s])
-                    blk += 1
-                    # tally total blocks
-                    tot += share
-                    # tally miner blocks
-                    if s.split('.')[0] == id:
-                        shr += share
-                blk += (shr/tot)*rwd-(fee*rwd)
-        if tot > 0:
-            df = df.append(pd.DataFrame([[id, f'unconfirmed {shr}', blk]], columns=['worker', 'status', 'ergs']))
-
-        return df.to_json(orient='records')
+    batch = str(uuid.uuid4())
     
-    except Exception as e:
-        logging.error(e)
+    # add block/miner combo
+    blocks = {}
+    for k in red.keys():
+        m = re.search('^ergo:shares:(?P<stype>round)(?P<round>\d+)$', k)
+        if m:
+            block = m.group('round')
+            blocks[block] = red.hgetall(f'ergo:shares:round{block}')
+    
+    # remove block/miner already paid    
+    for k in red.keys():
+        m = re.search('^ergo:payout:(?P<stype>round)(?P<round>\d+)$', k)
+        if m:
+            block = m.group('round')
+            rmv = red.hgetall(f'ergo:shares:round{block}')
+            for r in rmv:
+                if r in blocks[block]:
+                    del blocks[block][r]
 
-    return (json.dumps({}))
+    # total shares by block
+    miners = {}
+    totals = {}
+    for blk in blocks:
+        if blk not in totals: totals[blk] = 0
+        for mnr in blocks[blk]:
+            shr = blocks[blk][mnr]
+            totals[blk] += shr
+            miner = mnr.split('.')[0]                
+            if miner not in miners: miners[miner] = {}
+            if blk in miners[miner]: miners[miner][blk] += shr
+            else : miners[miner][blk] = shr
 
+    # check for unpaid amounts by miner/block (worker=miner.rig)
+    for m in miners:
+        ergs = 0
+        for b in miners[m]:
+            blockReward = MinersRewardAtHeight(b) # calc reward
+            blockReward_afterFee = blockReward - fee*blockReward # subtract fee
+            ergs = blockReward_afterFee * (miners[m][b] / totals[b]) # find % of reward in ergs
 
-def GetMiners():
-    try:
-        df = pd.read_sql_query(f"select distinct worker, rig from payouts", con=con)        
+        if ergs > minPayout:
+            v = int(float(ergs)*1000000) # convert to satoshis
+            bdy = [{'address': m, 'value': v, 'assets': []}]
+            res = requests.post(f'http://{nho}:{nod}/wallet/payment/send', headers=hdr, json=bdy)
 
-    except Exception as e:
-        logging.error(e)
-
-    return df.to_json(orient='records')
-
-
-def ArchivePayments():
-    logging.debug('paid')
+            # record payment to redis w/batch
+            red.hset(f'ergo:payout:round{b}', m, v)
 
 
 def GetStatsBlocks(st, nd):

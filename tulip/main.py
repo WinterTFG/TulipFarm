@@ -2,7 +2,7 @@ import redis, uvicorn
 # import re, requests, json, uuid
 import time #, sys, os
 
-#from payout import *
+from payout import *
 
 from datetime import datetime, timedelta
 from fastapi import FastAPI
@@ -79,24 +79,19 @@ async def MinerProcess():
     return ProcessPayouts()
 
 # miner info
-@app.get("/payout/miner/{id}")
-async def MinerInfo(id):
-    return GetMinerInfo(id)
-
-# miner earnings
-@app.get("/payout/miner/earnings/{id}")
-async def MinerEarnings(id, minute: Optional[int] = None):
-    return GetMinerEarnings(id, minute)
-
-# all miner/rig combos
-@app.get("/payout/miners")
-async def Miners():
-    return GetMiners()
-
-# archive old blocks already paid
-@app.get("/payout/miner/verify")
-async def MinerVerify():
-    return {"miner": "verify"}
+#@app.get("/payout/miner/{id}")
+#async def MinerInfo(id):
+#    return GetMinerInfo(id)
+#
+## miner earnings
+#@app.get("/payout/miner/earnings/{id}")
+#async def MinerEarnings(id, minute: Optional[int] = None):
+#    return GetMinerEarnings(id, minute)
+#
+## all miner/rig combos
+#@app.get("/payout/miners")
+#async def Miners():
+#    return GetMiners()
 
 # site last blocks
 @app.get("/stats/blocks/{startRow}/{endRow}")
