@@ -24,6 +24,11 @@ services:
       - './stratum:/var/ergo'
     ports: 
       - "8008:8008" # stratum
+    environment:
+      - TULIPHOST=ergotulip
+      - TULIPPORT=8000
+      - NODEHOST=ergonode_testnet
+      - NODEPORT=9052
     depends_on: 
       - ergonode
     entrypoint: nodemon ./tulip.js -e js # restart on js file changes
@@ -37,8 +42,17 @@ services:
       - './tulip:/app'
     ports: 
       - '8000:8000'
+    environment:
+      - REDISHOST=ergoredis_testnet
+      - REDISPORT=6379
+      - NODEHOST=ergonode_testnet
+      - NODEPORT=9052
+      - POOLFEE=0.007 # .7%
+      - MINPAYOUT=10 # ergs
+      - COIN=ergo
     depends_on: 
       - ergonode
+    # entrypoint: uvicorn main:app --host 0.0.0.0 --port 8000 --reload-dir /app
     entrypoint: uvicorn main:app --host 0.0.0.0 --debug --port 8000 --reload-dir /app
 
   ergoredis:

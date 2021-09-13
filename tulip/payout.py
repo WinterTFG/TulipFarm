@@ -1,5 +1,5 @@
 import redis
-import re
+import re, os
 import requests
 import json
 import logging
@@ -14,13 +14,13 @@ from fastapi import FastAPI
 ###
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
-rho = 'ergoredis_testnet'
-rds = '6379' # ?? env
-nho = 'ergonode_testnet'
-nod = '9052' # ?? make env
-fee = 0.007 # pool fee .7% ?? env
-hdr = {'api_key': 'oncejournalstrangeweather'}
-minPayout = 10 # ergs
+rho = os.environ.get('REDISHOST') # ergoredis
+rds = os.environ.get('REDISPORT') # '6379'
+nho = os.environ.get('NODEHOST')  # 'ergonode_testnet'
+nod = os.environ.get('NODEPORT')  # '9052' # ?? make env
+fee = os.environ.get('POOLFEE')   # 0.007 # pool fee .7%
+hdr = {'api_key': os.environ.get('APIKEY')}
+minPayout = os.environ.get('MINPAYOUT') # 10 # ergs
 
 # con = create_engine(f'postgresql://winter:t00lip@{dbo}:{dbp}/winter')
 red = redis.StrictRedis(host=rho, port=rds, db=0, charset="utf-8", decode_responses=True)

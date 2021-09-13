@@ -1,6 +1,6 @@
 import redis, uvicorn
 # import re, requests, json, uuid
-import time #, sys, os
+import time, os #, sys
 
 from payout import *
 
@@ -16,9 +16,9 @@ logging.basicConfig(format="%(asctime)s %(levelname)s %(threadName)s %(name)s %(
 #endregion LOGGING
 
 #region INIT
-api = 'ergoredis_testnet' # localhost
-rds = '6379'
-coin = 'ergo'
+api = os.environ.get('REDISHOST') # ergoredis
+rds = os.environ.get('REDISPORT') # '6379'
+coin = os.environ.get('COIN') # 'ergo'
 coins = {
     'ergo': {
         'symbol': 'ERG',

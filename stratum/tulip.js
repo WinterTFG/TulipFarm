@@ -2,8 +2,8 @@ var Stratum = require('./lib');
 var req = require('http');
 
 // stat tracker
-const host = '10.0.0.42'
-const port = 8000
+const host = process.env.TULIPHOST;
+const port = process.env.TULIPPORT;
 
 // stratum pool
 var pool = Stratum.createPool({
@@ -46,8 +46,8 @@ var pool = Stratum.createPool({
     },
     "daemons": [
         {   // ergo node
-            "host": "10.0.0.42",
-            "port": 9053,
+            "host": process.env.NODEHOST,
+            "port": process.env.NODEPORT,
             "user": "ergo", // not required
             "password": "ergo" // not required
         }
