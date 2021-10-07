@@ -3,7 +3,7 @@ import re, os
 import requests
 import json
 import logging
-import pandas as pd
+# import pandas as pd
 import uuid
 
 from datetime import datetime

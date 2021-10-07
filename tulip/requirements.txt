@@ -3,6 +3,6 @@ uvicorn
 fastapi
 # arq
 requests
-pandas
+# pandas
 # sqlalchemy
 # psycopg2

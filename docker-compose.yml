@@ -7,7 +7,7 @@ services:
     container_name: ergonode
     volumes: 
       - './node/:/var/ergo'
-      - '/var/ergo/mainnet/.ergo:/var/ergo/.ergo'
+      - '/opt/ergo/mainnet/.ergo:/var/ergo/.ergo'
     ports:
       - '9053:9053' # rempap for config files
     depends_on: 
@@ -27,8 +27,8 @@ services:
     environment:
       - TULIPHOST=ergotulip
       - TULIPPORT=8000
-      - NODEHOST=ergonode_testnet
-      - NODEPORT=9052
+      - NODEHOST=ergonode
+      - NODEPORT=9053
     depends_on: 
       - ergonode
     entrypoint: nodemon ./tulip.js -e js # restart on js file changes
@@ -43,10 +43,10 @@ services:
     ports: 
       - '8000:8000'
     environment:
-      - REDISHOST=ergoredis_testnet
+      - REDISHOST=ergoredis
       - REDISPORT=6379
-      - NODEHOST=ergonode_testnet
-      - NODEPORT=9052
+      - NODEHOST=ergonode
+      - NODEPORT=9053
       - POOLFEE=0.007 # .7%
       - MINPAYOUT=10 # ergs
       - COIN=ergo
@@ -59,7 +59,7 @@ services:
     image: redis
     container_name: ergoredis
     volumes:
-      - /var/ergo/mainnet/redis:/data # redis persistence
+      - /opt/ergo/mainnet/redis:/data # redis persistence
     ports:
       - '6379:6379'
     entrypoint: redis-server --appendonly yes
